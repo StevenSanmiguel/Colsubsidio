@@ -1,0 +1,2511 @@
+Inventario Backstage QA (solo lectura)
+inicio: 2026-10-26T23:26:05Z
+host: vm-agente
+grupo: rg-backstage-qas cluster: aks-backstage-qas namespace: backstage
+Los valores con forma de token, password o GUID se reemplazan por <redactado>.
+
+### A.1 Sistema operativo y recursos
+
+==================================================
+id: VM-01
+descripcion: Nombre, sistema y kernel
+cuando: 2026-10-26T23:26:05Z
+comando: hostnamectl
+---salida---
+ Static hostname: vm-agente
+       Icon name: computer-vm
+         Chassis: vm 🖴
+      Machine ID: 66037b2c835244e0a96566e0a5a6063a
+         Boot ID: d29a3ddb6fbd476ca4f8d031fe3d98fd
+  Virtualization: microsoft
+Operating System: Ubuntu 24.04.4 LTS
+          Kernel: Linux 7.0.0-1017-azure
+    Architecture: x86-64
+ Hardware Vendor: Microsoft Corporation
+  Hardware Model: Virtual Machine
+Firmware Version: Hyper-V UEFI Release v4.1
+   Firmware Date: Wed 2026-04-22
+    Firmware Age: 6month 5d
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-02
+descripcion: Distribucion de Linux
+cuando: 2026-10-26T23:26:05Z
+comando: cat /etc/os-release
+---salida---
+PRETTY_NAME="Ubuntu 24.04.4 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.4 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+LOGO=ubuntu-logo
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-03
+descripcion: Tiempo encendida y carga
+cuando: 2026-10-26T23:26:05Z
+comando: uptime
+---salida---
+ 23:26:05 up  3:36,  1 user,  load average: 2.24, 0.55, 0.23
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-04
+descripcion: CPU y memoria
+cuando: 2026-10-26T23:26:05Z
+comando: nproc && free -h
+---salida---
+2
+               total        used        free      shared  buff/cache   available
+Mem:           7.7Gi       1.1Gi       4.7Gi        26Mi       2.3Gi       6.7Gi
+Swap:             0B          0B          0B
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-05
+descripcion: Discos y espacio
+cuando: 2026-10-26T23:26:05Z
+comando: df -hT
+---salida---
+Filesystem     Type   Size  Used Avail Use% Mounted on
+/dev/root      ext4    29G   16G   13G  56% /
+tmpfs          tmpfs  3.9G     0  3.9G   0% /dev/shm
+tmpfs          tmpfs  1.6G  1.1M  1.6G   1% /run
+tmpfs          tmpfs  5.0M     0  5.0M   0% /run/lock
+/dev/sda16     ext4   881M  138M  682M  17% /boot
+/dev/sda15     vfat   105M  6.2M   99M   6% /boot/efi
+tmpfs          tmpfs  794M   12K  794M   1% /run/user/1000
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-06
+descripcion: Discos y particiones
+cuando: 2026-10-26T23:26:05Z
+comando: lsblk
+---salida---
+NAME    MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+sda       8:0    0   30G  0 disk 
+├─sda1    8:1    0   29G  0 part /
+├─sda14   8:14   0    4M  0 part 
+├─sda15   8:15   0  106M  0 part /boot/efi
+└─sda16 259:0    0  913M  0 part /boot
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-07
+descripcion: Zona horaria y sincronizacion
+cuando: 2026-10-26T23:26:05Z
+comando: timedatectl
+---salida---
+               Local time: Mon 2026-10-26 23:26:06 UTC
+           Universal time: Mon 2026-10-26 23:26:06 UTC
+                 RTC time: Mon 2026-10-26 23:26:05
+                Time zone: Etc/UTC (UTC, +0000)
+System clock synchronized: yes
+              NTP service: active
+          RTC in local TZ: no
+---fin--- exit=0 estado=ok
+
+### A.2 Red de la VM
+
+==================================================
+id: VM-10
+descripcion: IP por interfaz
+cuando: 2026-10-26T23:26:06Z
+comando: ip -brief address
+---salida---
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+eth0             UP             10.7.115.4/24 metric 100 fe80::7eed:8dff:fecc:310d/64 
+enP39898s1       UP             
+docker0          DOWN           172.17.0.1/16 
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-11
+descripcion: Rutas de salida
+cuando: 2026-10-26T23:26:06Z
+comando: ip route
+---salida---
+default via 10.7.115.1 dev eth0 proto dhcp src 10.7.115.4 metric 100 
+10.7.115.0/24 dev eth0 proto kernel scope link src 10.7.115.4 metric 100 
+10.7.115.1 dev eth0 proto dhcp scope link src 10.7.115.4 metric 100 
+168.63.129.16 via 10.7.115.1 dev eth0 proto dhcp src 10.7.115.4 metric 100 
+169.254.169.254 via 10.7.115.1 dev eth0 proto dhcp src 10.7.115.4 metric 100 
+172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown 
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-12
+descripcion: DNS de la VM
+cuando: 2026-10-26T23:26:06Z
+comando: resolvectl status
+---salida---
+Global
+         Protocols: -LLMNR -mDNS -DNSOverTLS DNSSEC=no/unsupported
+  resolv.conf mode: stub
+
+Link 2 (eth0)
+    Current Scopes: DNS
+         Protocols: +DefaultRoute -LLMNR -mDNS -DNSOverTLS DNSSEC=no/unsupported
+Current DNS Server: 168.63.129.16
+       DNS Servers: 168.63.129.16
+        DNS Domain: yv4lpvkbyjvuhmwffqcg2acq3d.bx.internal.cloudapp.net
+
+Link 3 (enP39898s1)
+    Current Scopes: none
+         Protocols: -DefaultRoute -LLMNR -mDNS -DNSOverTLS DNSSEC=no/unsupported
+
+Link 4 (docker0)
+    Current Scopes: none
+         Protocols: -DefaultRoute -LLMNR -mDNS -DNSOverTLS DNSSEC=no/unsupported
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-13
+descripcion: Resolucion del vault
+cuando: 2026-10-26T23:26:06Z
+comando: getent hosts backstage-key-qas.vault.azure.net
+---salida---
+10.7.115.8      backstage-key-qas.privatelink.vaultcore.azure.net backstage-key-qas.vault.azure.net
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-14
+descripcion: Resolucion del ACR
+cuando: 2026-10-26T23:26:06Z
+comando: getent hosts backstagecoreqas.azurecr.io
+---salida---
+10.7.115.6      backstagecoreqas.privatelink.azurecr.io backstagecoreqas.azurecr.io
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-15
+descripcion: Resolucion de Postgres
+cuando: 2026-10-26T23:26:06Z
+comando: getent hosts db-postgree-backstage-qas.postgres.database.azure.com
+---salida---
+10.7.115.7      db-postgree-backstage-qas.privatelink.postgres.database.azure.com db-postgree-backstage-qas.postgres.database.azure.com
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-16
+descripcion: Resolucion del API del cluster
+cuando: 2026-10-26T23:26:06Z
+comando: getent hosts aks-backstage-qas-dns-ig21xsi4.hcp.eastus.azmk8s.io
+---salida---
+52.150.51.190   aks-backstage-qas-dns-ig21xsi4.hcp.eastus.azmk8s.io
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-17
+descripcion: Resolucion del portal
+cuando: 2026-10-26T23:26:06Z
+comando: getent hosts backstageqas.colsubsidio.com
+---salida---
+
+---fin--- exit=2 estado=error
+
+==================================================
+id: VM-18
+descripcion: IP publica de salida
+cuando: 2026-10-26T23:26:06Z
+comando: curl -4 -s --max-time 10 https://ifconfig.me
+---salida---
+172.212.105.158
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-19
+descripcion: Puertos abiertos
+cuando: 2026-10-26T23:26:06Z
+comando: ss -tulpn
+---salida---
+Netid State  Recv-Q Send-Q   Local Address:Port Peer Address:PortProcess
+udp   UNCONN 0      0           127.0.0.54:53        0.0.0.0:*          
+udp   UNCONN 0      0        127.0.0.53%lo:53        0.0.0.0:*          
+udp   UNCONN 0      0      10.7.115.4%eth0:68        0.0.0.0:*          
+udp   UNCONN 0      0            127.0.0.1:323       0.0.0.0:*          
+udp   UNCONN 0      0                [::1]:323          [::]:*          
+tcp   LISTEN 0      4096     127.0.0.53%lo:53        0.0.0.0:*          
+tcp   LISTEN 0      4096        127.0.0.54:53        0.0.0.0:*          
+tcp   LISTEN 0      4096           0.0.0.0:22        0.0.0.0:*          
+tcp   LISTEN 0      4096              [::]:22           [::]:*          
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-20
+descripcion: Firewall local
+cuando: 2026-10-26T23:26:06Z
+comando: sudo -n iptables -S | head -n 50
+---salida---
+sudo: a password is required
+---fin--- exit=0 estado=ok
+
+### A.3 Servicios y procesos
+
+==================================================
+id: VM-30
+descripcion: Servicios corriendo
+cuando: 2026-10-26T23:26:06Z
+comando: systemctl list-units --type=service --state=running --no-pager
+---salida---
+  UNIT                        LOAD   ACTIVE SUB     DESCRIPTION
+  chrony.service              loaded active running chrony, an NTP client/server
+  containerd.service          loaded active running containerd container runtime
+  cron.service                loaded active running Regular background program processing daemon
+  dbus.service                loaded active running D-Bus System Message Bus
+  docker.service              loaded active running Docker Application Container Engine
+  gcd.service                 loaded active running GC Service
+  getty@tty1.service          loaded active running Getty on tty1
+  hv-kvp-daemon.service       loaded active running Hyper-V KVP Protocol Daemon
+  mdatp.service               loaded active running Microsoft Defender
+  ModemManager.service        loaded active running Modem Manager
+  multipathd.service          loaded active running Device-Mapper Multipath Device Controller
+  networkd-dispatcher.service loaded active running Dispatcher daemon for systemd-networkd
+  polkit.service              loaded active running Authorization Manager
+  rsyslog.service             loaded active running System Logging Service
+  serial-getty@ttyS0.service  loaded active running Serial Getty on ttyS0
+  systemd-hostnamed.service   loaded active running Hostname Service
+  systemd-journald.service    loaded active running Journal Service
+  systemd-logind.service      loaded active running User Login Management
+  systemd-networkd.service    loaded active running Network Configuration
+  systemd-resolved.service    loaded active running Network Name Resolution
+  systemd-timedated.service   loaded active running Time & Date Service
+  systemd-udevd.service       loaded active running Rule-based Manager for Device Events and Files
+  udisks2.service             loaded active running Disk Manager
+  unattended-upgrades.service loaded active running Unattended Upgrades Shutdown
+  user@1000.service           loaded active running User Manager for UID 1000
+  uuidd.service               loaded active running Daemon for generating UUIDs
+  walinuxagent.service        loaded active running Azure Linux Agent
+
+Legend: LOAD   → Reflects whether the unit definition was properly loaded.
+        ACTIVE → The high-level unit activation state, i.e. generalization of SUB.
+        SUB    → The low-level unit activation state, values depend on unit type.
+
+27 loaded units listed.
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-31
+descripcion: Servicios al arranque
+cuando: 2026-10-26T23:26:06Z
+comando: systemctl list-unit-files --type=service --state=enabled --no-pager
+---salida---
+UNIT FILE                              STATE   PRESET
+apparmor.service                       enabled enabled
+apport.service                         enabled enabled
+blk-availability.service               enabled enabled
+chrony.service                         enabled enabled
+cloud-config.service                   enabled enabled
+cloud-final.service                    enabled enabled
+cloud-init-local.service               enabled enabled
+cloud-init.service                     enabled enabled
+console-setup.service                  enabled enabled
+containerd.service                     enabled enabled
+cron.service                           enabled enabled
+dmesg.service                          enabled enabled
+docker.service                         enabled enabled
+e2scrub_reap.service                   enabled enabled
+ephemeral-disk-warning.service         enabled enabled
+finalrd.service                        enabled enabled
+gcd.service                            enabled enabled
+getty@.service                         enabled enabled
+grub-common.service                    enabled enabled
+grub-initrd-fallback.service           enabled enabled
+hv-fcopy-daemon.service                enabled enabled
+hv-kvp-daemon.service                  enabled enabled
+hv-vss-daemon.service                  enabled enabled
+keyboard-setup.service                 enabled enabled
+lvm2-monitor.service                   enabled enabled
+mdatp.service                          enabled enabled
+mde_netfilter_v2.service               enabled enabled
+ModemManager.service                   enabled enabled
+multipathd.service                     enabled enabled
+networkd-dispatcher.service            enabled enabled
+nvmefc-boot-connections.service        enabled enabled
+nvmf-autoconnect.service               enabled enabled
+open-iscsi.service                     enabled enabled
+open-vm-tools.service                  enabled enabled
+pollinate.service                      enabled enabled
+rsyslog.service                        enabled enabled
+secureboot-db.service                  enabled enabled
+setvtrgb.service                       enabled enabled
+snapd.apparmor.service                 enabled enabled
+snapd.autoimport.service               enabled enabled
+snapd.core-fixup.service               enabled enabled
+snapd.recovery-chooser-trigger.service enabled enabled
+snapd.seeded.service                   enabled enabled
+snapd.service                          enabled enabled
+snapd.system-shutdown.service          enabled enabled
+sysstat.service                        enabled enabled
+systemd-networkd-wait-online.service   enabled enabled
+systemd-networkd.service               enabled enabled
+systemd-pstore.service                 enabled enabled
+systemd-resolved.service               enabled enabled
+ua-reboot-cmds.service                 enabled enabled
+ubuntu-advantage.service               enabled enabled
+udisks2.service                        enabled enabled
+ufw.service                            enabled enabled
+unattended-upgrades.service            enabled enabled
+vgauth.service                         enabled enabled
+walinuxagent-network-setup.service     enabled enabled
+walinuxagent.service                   enabled enabled
+
+58 unit files listed.
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-32
+descripcion: Tareas programadas
+cuando: 2026-10-26T23:26:07Z
+comando: systemctl list-timers --all --no-pager
+---salida---
+NEXT                            LEFT LAST                              PASSED UNIT                           ACTIVATES
+Mon 2026-10-26 23:30:00 UTC 3min 52s Mon 2026-10-26 23:20:06 UTC     6min ago sysstat-collect.timer          sysstat-collect.service
+Mon 2026-10-26 23:54:52 UTC    28min Mon 2026-10-26 22:02:50 UTC 1h 23min ago fwupd-refresh.timer            fwupd-refresh.service
+Tue 2026-10-27 00:00:00 UTC    33min Mon 2026-10-26 19:06:53 UTC            - dpkg-db-backup.timer           dpkg-db-backup.service
+Tue 2026-10-27 00:00:00 UTC    33min Mon 2026-10-26 19:06:53 UTC            - logrotate.timer                logrotate.service
+Tue 2026-10-27 00:07:00 UTC    40min -                                      - sysstat-summary.timer          sysstat-summary.service
+Tue 2026-10-27 00:30:43 UTC  1h 4min Mon 2026-10-26 22:14:16 UTC 1h 11min ago motd-news.timer                motd-news.service
+Tue 2026-10-27 06:41:47 UTC       7h Mon 2026-10-26 19:19:15 UTC            - apt-daily-upgrade.timer        apt-daily-upgrade.service
+Tue 2026-10-27 09:40:04 UTC      10h Mon 2026-10-26 19:48:52 UTC            - man-db.timer                   man-db.service
+Tue 2026-10-27 11:15:23 UTC      11h Mon 2026-10-26 21:35:46 UTC 1h 50min ago apt-daily.timer                apt-daily.service
+Tue 2026-10-27 19:55:08 UTC      20h Mon 2026-10-26 19:55:08 UTC 3h 30min ago update-notifier-download.timer update-notifier-download.service
+Tue 2026-10-27 20:05:08 UTC      20h Mon 2026-10-26 20:05:08 UTC 3h 20min ago systemd-tmpfiles-clean.timer   systemd-tmpfiles-clean.service
+Wed 2026-10-28 04:28:41 UTC 1 day 5h Tue 2026-10-20 06:37:44 UTC            - update-notifier-motd.timer     update-notifier-motd.service
+Sun 2026-11-01 03:10:07 UTC   5 days Mon 2026-10-26 19:06:59 UTC            - e2scrub_all.timer              e2scrub_all.service
+Mon 2026-11-02 01:15:01 UTC   6 days Mon 2026-10-26 19:15:53 UTC            - fstrim.timer                   fstrim.service
+-                                  - -                                      - apport-autoreport.timer        apport-autoreport.service
+-                                  - -                                      - snapd.snap-repair.timer        snapd.snap-repair.service
+-                                  - -                                      - ua-timer.timer                 ua-timer.service
+
+17 timers listed.
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-33
+descripcion: Cron del usuario y del sistema
+cuando: 2026-10-26T23:26:07Z
+comando: crontab -l; ls /etc/cron.d
+---salida---
+# Edit this file to introduce tasks to be run by cron.
+# 
+# Each task to run has to be defined through a single line
+# indicating with different fields when the task will be run
+# and what command to run for the task
+# 
+# To define the time you can provide concrete values for
+# minute (m), hour (h), day of month (dom), month (mon),
+# and day of week (dow) or use '*' in these fields (for 'any').
+# 
+# Notice that tasks will be started based on the cron's system
+# daemon's notion of time and timezones.
+# 
+# Output of the crontab jobs (including errors) is sent through
+# email to the user the crontab file belongs to (unless redirected).
+# 
+# For example, you can run a backup of all your user accounts
+# at 5 a.m every week with:
+# 0 5 * * 1 tar -zcf /var/backups/home.tgz /home/
+# 
+# For more information see the manual pages of crontab(5) and cron(8)
+# 
+# m h  dom mon dow   command
+@reboot /azp/run.sh >> /azp/run.log 2>&1
+e2scrub_all
+sysstat
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-34
+descripcion: Procesos por memoria
+cuando: 2026-10-26T23:26:07Z
+comando: ps aux --sort=-%mem | head -n 20
+---salida---
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+mdatp       9730  0.1  2.9 778360 240456 ?       Sl   22:14   0:07 /opt/microsoft/mdatp/sbin/wdavdaemon unprivileged 35 37 39 41 34 --log_level info
+root        9503  0.9  2.5 1147428 208220 ?      Ssl  22:14   0:42 /opt/microsoft/mdatp/sbin/wdavdaemon
+azureus+     803  0.0  1.7 274174000 141392 ?    Sl   19:50   0:06 /azp/bin/Agent.Listener run
+root        9565  0.1  1.2 875164 97560 ?        Sl   22:14   0:06 /opt/microsoft/mdatp/sbin/wdavdaemon edr 23 25 22 --log_level info --edr_startup_mode slim
+root         958  0.0  1.1 1990652 90844 ?       Ssl  19:50   0:01 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+root         767  0.0  0.6 1871184 52192 ?       Ssl  19:50   0:04 /usr/bin/containerd
+root         882  0.1  0.5 414628 41488 ?        Sl   19:50   0:13 /usr/bin/python3 -u bin/WALinuxAgent-2.16.0.2-py3.12.egg -run-exthandlers
+root         720  0.0  0.4  44228 35872 ?        Ss   19:50   0:00 /usr/bin/python3 -u /usr/sbin/waagent -daemon
+root         201  0.0  0.3 289004 27332 ?        SLsl 19:50   0:00 /sbin/multipathd -d -s
+root        8228  0.0  0.2 187356 24092 ?        Sl   22:14   0:00 /var/lib/waagent/Microsoft.GuestConfiguration.ConfigurationforLinux-1.26.116/GCAgent/GC/gc_linux_service
+root         815  0.0  0.2 110040 23312 ?        Ssl  19:50   0:00 /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal
+root         709  0.0  0.2  32448 20868 ?        Ss   19:50   0:00 /usr/bin/python3 /usr/bin/networkd-dispatcher --run-startup-triggers
+root         139  0.0  0.2  67272 18972 ?        S<s  19:50   0:00 /usr/lib/systemd/systemd-journald
+root           1  0.0  0.1  22972 14504 ?        Ss   19:50   0:07 /sbin/init
+root         719  0.0  0.1 468996 13808 ?        Ssl  19:50   0:00 /usr/libexec/udisks2/udisksd
+systemd+     459  0.0  0.1  21584 13376 ?        Ss   19:50   0:01 /usr/lib/systemd/systemd-resolved
+root         852  0.0  0.1 392108 13108 ?        Ssl  19:50   0:00 /usr/sbin/ModemManager
+azureus+    2956  0.0  0.1  20388 11648 ?        Ss   19:58   0:00 /usr/lib/systemd/systemd --user
+systemd+     649  0.0  0.1  19148  9800 ?        Ss   19:50   0:00 /usr/lib/systemd/systemd-networkd
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-35
+descripcion: Agente de Azure DevOps
+cuando: 2026-10-26T23:26:07Z
+comando: systemctl list-units --type=service --all --no-pager | grep -i vsts
+---salida---
+
+---fin--- exit=1 estado=error
+
+==================================================
+id: VM-36
+descripcion: Carpeta del agente
+cuando: 2026-10-26T23:26:07Z
+comando: ls -d /home/*/myagent /opt/*agent*
+---salida---
+ls: cannot access '/home/*/myagent': No such file or directory
+ls: cannot access '/opt/*agent*': No such file or directory
+---fin--- exit=2 estado=error
+
+==================================================
+id: VM-37
+descripcion: Contenedores Docker
+cuando: 2026-10-26T23:26:07Z
+comando: docker ps --format '{{.Names}} {{.Image}} {{.Status}}'
+---salida---
+
+---fin--- exit=0 estado=ok
+
+### A.4 Herramientas instaladas
+
+==================================================
+id: VM-40
+descripcion: Azure CLI
+cuando: 2026-10-26T23:26:08Z
+comando: az version -o table
+---salida---
+Azure-cli    Azure-cli-core    Azure-cli-telemetry
+-----------  ----------------  ---------------------
+2.84.0       2.84.0            1.1.0
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-41
+descripcion: kubectl
+cuando: 2026-10-26T23:26:08Z
+comando: kubectl version --client
+---salida---
+Client Version: v1.37.1
+Kustomize Version: v5.8.1
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-42
+descripcion: kubelogin
+cuando: 2026-10-26T23:26:08Z
+comando: kubelogin --version
+---salida---
+kubelogin version 
+git hash: v0.2.21/532826311d3a5458df998a2cf910f5dec2a66e17
+Go version: go1.26.6
+Build time: 2026-10-08T21:03:33Z
+Platform: linux/amd64
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-43
+descripcion: Helm
+cuando: 2026-10-26T23:26:08Z
+comando: helm version
+---salida---
+bash: line 1: helm: command not found
+---fin--- exit=127 estado=error
+
+==================================================
+id: VM-44
+descripcion: Flux CLI
+cuando: 2026-10-26T23:26:08Z
+comando: flux --version
+---salida---
+bash: line 1: flux: command not found
+---fin--- exit=127 estado=error
+
+==================================================
+id: VM-45
+descripcion: Terraform u OpenTofu
+cuando: 2026-10-26T23:26:08Z
+comando: terraform version || tofu version
+---salida---
+bash: line 1: terraform: command not found
+bash: line 1: tofu: command not found
+---fin--- exit=127 estado=error
+
+==================================================
+id: VM-46
+descripcion: Git y Docker
+cuando: 2026-10-26T23:26:08Z
+comando: git --version; docker --version
+---salida---
+git version 2.43.0
+Docker version 29.3.0, build 5927d80
+---fin--- exit=0 estado=ok
+
+### A.5 Sesion de Azure y cluster
+
+==================================================
+id: VM-50
+descripcion: Cuenta y suscripcion
+cuando: 2026-10-26T23:26:08Z
+comando: az account show --query '{suscripcion:name,usuario:user.name}' -o table
+---salida---
+Suscripcion                  Usuario
+---------------------------  --------------------------
+Colsubsidio Operaciones T.I  ediszunlop@colsubsidio.com
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-51
+descripcion: Version, estado y red del cluster
+cuando: 2026-10-26T23:26:09Z
+comando: az aks show -g rg-backstage-qas -n aks-backstage-qas --query '{version:kubernetesVersion,estado:powerState.code,privado:apiServerAccessProfile.enablePrivateCluster,red:networkProfile.networkPlugin,modo:networkProfile.networkPluginMode,politica:networkProfile.networkPolicy}' -o table
+---salida---
+Version    Estado    Privado    Red    Modo     Politica
+---------  --------  ---------  -----  -------  ----------
+1.32.6     Running   False      azure  overlay  calico
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-52
+descripcion: Pools de nodos
+cuando: 2026-10-26T23:26:11Z
+comando: az aks show -g rg-backstage-qas -n aks-backstage-qas --query 'agentPoolProfiles[].{pool:name,modo:mode,nodos:count,tamano:vmSize,so:osSKU,version:orchestratorVersion}' -o table
+---salida---
+Pool      Modo    Nodos    Tamano          Version
+--------  ------  -------  --------------  ---------
+nodepool  System  3        Standard_A2_v2  1.32.6
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-53
+descripcion: Complementos del cluster
+cuando: 2026-10-26T23:26:12Z
+comando: az aks show -g rg-backstage-qas -n aks-backstage-qas --query 'keys(addonProfiles || `{}`)' -o tsv
+---salida---
+azureKeyvaultSecretsProvider
+azurepolicy
+extensionManager
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-54
+descripcion: Identidad federada y RBAC
+cuando: 2026-10-26T23:26:13Z
+comando: az aks show -g rg-backstage-qas -n aks-backstage-qas --query '{oidc:oidcIssuerProfile.enabled,workloadIdentity:securityProfile.workloadIdentity.enabled,aadRbac:aadProfile.enableAzureRbac,localAccounts:disableLocalAccounts}' -o table
+---salida---
+Oidc    WorkloadIdentity    AadRbac    LocalAccounts
+------  ------------------  ---------  ---------------
+True    True                True       False
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-55
+descripcion: Versiones de actualizacion
+cuando: 2026-10-26T23:26:14Z
+comando: az aks get-upgrades -g rg-backstage-qas -n aks-backstage-qas -o table
+---salida---
+Name     ResourceGroup     MasterVersion    Upgrades
+-------  ----------------  ---------------  ---------------------------------------------------------------------------------------------------------
+default  rg-backstage-qas  1.32.6           1.33.13, 1.34.0, 1.34.1, 1.34.2, 1.34.3, 1.34.4, 1.34.5, 1.34.6, 1.34.7, 1.34.8, 1.34.9, 1.34.10, 1.34.11
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-56
+descripcion: Acceso al API y cuentas locales
+cuando: 2026-10-26T23:26:15Z
+comando: az aks show -g rg-backstage-qas -n aks-backstage-qas --query '{rangosAutorizados:length(apiServerAccessProfile.authorizedIpRanges || `[]`),privado:apiServerAccessProfile.enablePrivateCluster,cuentasLocalesDeshabilitadas:disableLocalAccounts}' -o table
+---salida---
+RangosAutorizados    Privado    CuentasLocalesDeshabilitadas
+-------------------  ---------  ------------------------------
+5                    False      False
+---fin--- exit=0 estado=ok
+
+==================================================
+id: VM-57
+descripcion: Pools con autoscaling
+cuando: 2026-10-26T23:26:17Z
+comando: az aks nodepool list -g rg-backstage-qas --cluster-name aks-backstage-qas --query '[].{pool:name,modo:mode,nodos:count,tamano:vmSize,so:osSKU,version:orchestratorVersion,autoscaling:enableAutoScaling,min:minCount,max:maxCount}' -o table
+---salida---
+Pool      Modo    Nodos    Tamano          Version    Autoscaling
+--------  ------  -------  --------------  ---------  -------------
+nodepool  System  3        Standard_A2_v2  1.32.6     False
+---fin--- exit=0 estado=ok
+
+### B.1 Conexion y estado general
+
+==================================================
+id: K-01
+descripcion: Contexto actual
+cuando: 2026-10-26T23:26:18Z
+comando: kubectl config current-context
+---salida---
+aks-backstage-qas
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-02
+descripcion: Version cliente y servidor
+cuando: 2026-10-26T23:26:18Z
+comando: kubectl version
+---salida---
+Client Version: v1.37.1
+Kustomize Version: v5.8.1
+Server Version: v1.32.6
+Warning: version difference between client (1.37) and server (1.32) exceeds the supported minor version skew of +/-1
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-03
+descripcion: Plano de control
+cuando: 2026-10-26T23:26:19Z
+comando: kubectl cluster-info
+---salida---
+Kubernetes control plane is running at https://aks-backstage-qas-dns-ig21xsi4.hcp.eastus.azmk8s.io:443
+CoreDNS is running at https://aks-backstage-qas-dns-ig21xsi4.hcp.eastus.azmk8s.io:443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+Metrics-server is running at https://aks-backstage-qas-dns-ig21xsi4.hcp.eastus.azmk8s.io:443/api/v1/namespaces/kube-system/services/https:metrics-server:/proxy
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-04
+descripcion: Permisos de la cuenta
+cuando: 2026-10-26T23:26:20Z
+comando: kubectl auth can-i --list
+---salida---
+Warning: the list may be incomplete: webhook authorizer does not support user rule resolution
+Resources                                       Non-Resource URLs   Resource Names   Verbs
+selfsubjectreviews.authentication.k8s.io        []                  []               [create]
+selfsubjectaccessreviews.authorization.k8s.io   []                  []               [create]
+selfsubjectrulesreviews.authorization.k8s.io    []                  []               [create]
+                                                [/api/*]            []               [get]
+                                                [/api]              []               [get]
+                                                [/apis/*]           []               [get]
+                                                [/apis]             []               [get]
+                                                [/healthz]          []               [get]
+                                                [/healthz]          []               [get]
+                                                [/livez]            []               [get]
+                                                [/livez]            []               [get]
+                                                [/openapi/*]        []               [get]
+                                                [/openapi]          []               [get]
+                                                [/readyz]           []               [get]
+                                                [/readyz]           []               [get]
+                                                [/version/]         []               [get]
+                                                [/version/]         []               [get]
+                                                [/version]          []               [get]
+                                                [/version]          []               [get]
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-05
+descripcion: Tipos de objeto
+cuando: 2026-10-26T23:26:21Z
+comando: kubectl api-resources --verbs=list -o name | sort
+---salida---
+adminnetworkpolicies.policy.networking.k8s.io
+alerts.notification.toolkit.fluxcd.io
+apiservers.operator.tigera.io
+apiservices.apiregistration.k8s.io
+assign.mutations.gatekeeper.sh
+assignimage.mutations.gatekeeper.sh
+assignmetadata.mutations.gatekeeper.sh
+bgpconfigurations.crd.projectcalico.org
+bgpfilters.crd.projectcalico.org
+bgppeers.crd.projectcalico.org
+blockaffinities.crd.projectcalico.org
+buckets.source.toolkit.fluxcd.io
+caliconodestatuses.crd.projectcalico.org
+certificatesigningrequests.certificates.k8s.io
+clusterinformations.crd.projectcalico.org
+clusterrolebindings.rbac.authorization.k8s.io
+clusterroles.rbac.authorization.k8s.io
+componentstatuses
+configmaps
+configpodstatuses.status.gatekeeper.sh
+configs.config.gatekeeper.sh
+configsyncstatuses.aks.clusterconfig.azure.com
+connectionpodstatuses.status.gatekeeper.sh
+connections.connection.gatekeeper.sh
+constraintpodstatuses.status.gatekeeper.sh
+constrainttemplatepodstatuses.status.gatekeeper.sh
+constrainttemplates.templates.gatekeeper.sh
+controllerrevisions.apps
+cronjobs.batch
+csidrivers.storage.k8s.io
+csinodes.storage.k8s.io
+csistoragecapacities.storage.k8s.io
+customresourcedefinitions.apiextensions.k8s.io
+daemonsets.apps
+deployments.apps
+endpoints
+endpointslices.discovery.k8s.io
+events
+events.events.k8s.io
+expansiontemplate.expansion.gatekeeper.sh
+expansiontemplatepodstatuses.status.gatekeeper.sh
+extensionconfigs.aks.clusterconfig.azure.com
+felixconfigurations.crd.projectcalico.org
+flowschemas.flowcontrol.apiserver.k8s.io
+fluxconfigs.clusterconfig.azure.com
+fluxconfigsyncstatuses.clusterconfig.azure.com
+gitrepositories.source.toolkit.fluxcd.io
+globalnetworkpolicies.crd.projectcalico.org
+globalnetworksets.crd.projectcalico.org
+helmcharts.source.toolkit.fluxcd.io
+helmreleases.helm.toolkit.fluxcd.io
+helmrepositories.source.toolkit.fluxcd.io
+horizontalpodautoscalers.autoscaling
+hostendpoints.crd.projectcalico.org
+imagejobs.eraser.sh
+imagelists.eraser.sh
+imagepolicies.image.toolkit.fluxcd.io
+imagerepositories.image.toolkit.fluxcd.io
+imagesets.operator.tigera.io
+imageupdateautomations.image.toolkit.fluxcd.io
+ingressclasses.networking.k8s.io
+ingresses.networking.k8s.io
+installations.operator.tigera.io
+ipamblocks.crd.projectcalico.org
+ipamconfigs.crd.projectcalico.org
+ipamhandles.crd.projectcalico.org
+ippools.crd.projectcalico.org
+ipreservations.crd.projectcalico.org
+jobs.batch
+kubecontrollersconfigurations.crd.projectcalico.org
+kustomizations.kustomize.toolkit.fluxcd.io
+leases.coordination.k8s.io
+limitranges
+modifyset.mutations.gatekeeper.sh
+mutatingwebhookconfigurations.admissionregistration.k8s.io
+mutatorpodstatuses.status.gatekeeper.sh
+namespaces
+networkpolicies.crd.projectcalico.org
+networkpolicies.networking.k8s.io
+networksets.crd.projectcalico.org
+nodeinfo.multitenancy.acn.azure.com
+nodenetworkconfigs.acn.azure.com
+nodes
+nodes.metrics.k8s.io
+ocirepositories.source.toolkit.fluxcd.io
+overlayextensionconfigs.acn.azure.com
+persistentvolumeclaims
+persistentvolumes
+poddisruptionbudgets.policy
+pods
+pods.metrics.k8s.io
+podtemplates
+policies.defender.microsoft.com
+priorityclasses.scheduling.k8s.io
+prioritylevelconfigurations.flowcontrol.apiserver.k8s.io
+providerpodstatuses.status.gatekeeper.sh
+providers.externaldata.gatekeeper.sh
+providers.notification.toolkit.fluxcd.io
+receivers.notification.toolkit.fluxcd.io
+replicasets.apps
+replicationcontrollers
+resourcequotas
+rolebindings.rbac.authorization.k8s.io
+roles.rbac.authorization.k8s.io
+runtimeclasses.node.k8s.io
+runtimepolicies.defender.microsoft.com
+secretproviderclasses.secrets-store.csi.x-k8s.io
+secretproviderclasspodstatuses.secrets-store.csi.x-k8s.io
+secrets
+serviceaccounts
+services
+statefulsets.apps
+storageclasses.storage.k8s.io
+syncpolicies.azurepolicy.azure.com
+syncsets.syncset.gatekeeper.sh
+tiers.crd.projectcalico.org
+tigerastatuses.operator.tigera.io
+validatingadmissionpolicies.admissionregistration.k8s.io
+validatingadmissionpolicybindings.admissionregistration.k8s.io
+validatingwebhookconfigurations.admissionregistration.k8s.io
+volumeattachments.storage.k8s.io
+volumesnapshotclasses.snapshot.storage.k8s.io
+volumesnapshotcontents.snapshot.storage.k8s.io
+volumesnapshots.snapshot.storage.k8s.io
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-06
+descripcion: Extensiones (CRD)
+cuando: 2026-10-26T23:26:22Z
+comando: kubectl get crd -o custom-columns=NAME:.metadata.name,CREATED:.metadata.creationTimestamp
+---salida---
+NAME                                                        CREATED
+adminnetworkpolicies.policy.networking.k8s.io               2026-03-17T21:29:47Z
+alerts.notification.toolkit.fluxcd.io                       2026-03-09T03:09:17Z
+apiservers.operator.tigera.io                               2026-03-17T21:28:56Z
+assign.mutations.gatekeeper.sh                              2025-08-13T17:57:57Z
+assignimage.mutations.gatekeeper.sh                         2025-08-13T17:57:57Z
+assignmetadata.mutations.gatekeeper.sh                      2025-08-13T17:57:57Z
+bgpconfigurations.crd.projectcalico.org                     2026-03-17T21:28:56Z
+bgpfilters.crd.projectcalico.org                            2026-03-17T21:29:47Z
+bgppeers.crd.projectcalico.org                              2026-03-17T21:29:47Z
+blockaffinities.crd.projectcalico.org                       2026-03-17T21:29:47Z
+buckets.source.toolkit.fluxcd.io                            2026-03-09T03:09:17Z
+caliconodestatuses.crd.projectcalico.org                    2026-03-17T21:29:47Z
+clusterinformations.crd.projectcalico.org                   2026-03-17T21:29:47Z
+configpodstatuses.status.gatekeeper.sh                      2025-08-13T17:57:57Z
+configs.config.gatekeeper.sh                                2025-08-13T17:57:58Z
+configsyncstatuses.aks.clusterconfig.azure.com              2026-03-09T03:06:39Z
+connectionpodstatuses.status.gatekeeper.sh                  2025-09-06T20:26:57Z
+connections.connection.gatekeeper.sh                        2025-09-06T20:26:57Z
+constraintpodstatuses.status.gatekeeper.sh                  2025-08-13T17:57:58Z
+constrainttemplatepodstatuses.status.gatekeeper.sh          2025-08-13T17:57:58Z
+constrainttemplates.templates.gatekeeper.sh                 2025-08-13T17:57:58Z
+expansiontemplate.expansion.gatekeeper.sh                   2025-08-13T17:57:58Z
+expansiontemplatepodstatuses.status.gatekeeper.sh           2025-08-13T17:57:58Z
+extensionconfigs.aks.clusterconfig.azure.com                2026-03-09T03:06:39Z
+felixconfigurations.crd.projectcalico.org                   2026-03-17T21:28:56Z
+fluxconfigs.clusterconfig.azure.com                         2026-03-09T03:09:17Z
+fluxconfigsyncstatuses.clusterconfig.azure.com              2026-03-09T03:09:17Z
+gitrepositories.source.toolkit.fluxcd.io                    2026-03-09T03:09:18Z
+globalnetworkpolicies.crd.projectcalico.org                 2026-03-17T21:29:47Z
+globalnetworksets.crd.projectcalico.org                     2026-03-17T21:29:48Z
+helmcharts.source.toolkit.fluxcd.io                         2026-03-09T03:09:17Z
+helmreleases.helm.toolkit.fluxcd.io                         2026-03-09T03:09:18Z
+helmrepositories.source.toolkit.fluxcd.io                   2026-03-09T03:09:17Z
+hostendpoints.crd.projectcalico.org                         2026-03-17T21:29:47Z
+imagejobs.eraser.sh                                         2025-08-13T17:50:19Z
+imagelists.eraser.sh                                        2025-08-13T17:50:19Z
+imagepolicies.image.toolkit.fluxcd.io                       2026-03-09T03:09:18Z
+imagerepositories.image.toolkit.fluxcd.io                   2026-03-09T03:09:18Z
+imagesets.operator.tigera.io                                2026-03-17T21:28:56Z
+imageupdateautomations.image.toolkit.fluxcd.io              2026-03-09T03:09:17Z
+installations.operator.tigera.io                            2026-03-17T21:28:56Z
+ipamblocks.crd.projectcalico.org                            2026-03-17T21:29:47Z
+ipamconfigs.crd.projectcalico.org                           2026-03-17T21:29:47Z
+ipamhandles.crd.projectcalico.org                           2026-03-17T21:29:47Z
+ippools.crd.projectcalico.org                               2026-03-17T21:28:56Z
+ipreservations.crd.projectcalico.org                        2026-03-17T21:29:48Z
+kubecontrollersconfigurations.crd.projectcalico.org         2026-03-17T21:28:56Z
+kustomizations.kustomize.toolkit.fluxcd.io                  2026-03-09T03:09:18Z
+modifyset.mutations.gatekeeper.sh                           2025-08-13T17:57:57Z
+mutatorpodstatuses.status.gatekeeper.sh                     2025-08-13T17:57:57Z
+networkpolicies.crd.projectcalico.org                       2026-03-17T21:29:47Z
+networksets.crd.projectcalico.org                           2026-03-17T21:29:47Z
+nodeinfo.multitenancy.acn.azure.com                         2026-05-06T20:07:32Z
+nodenetworkconfigs.acn.azure.com                            2025-08-13T17:47:38Z
+ocirepositories.source.toolkit.fluxcd.io                    2026-03-09T03:09:17Z
+overlayextensionconfigs.acn.azure.com                       2025-08-13T17:47:38Z
+policies.defender.microsoft.com                             2025-08-13T18:29:12Z
+providerpodstatuses.status.gatekeeper.sh                    2026-06-10T20:16:34Z
+providers.externaldata.gatekeeper.sh                        2025-08-13T17:57:58Z
+providers.notification.toolkit.fluxcd.io                    2026-03-09T03:09:17Z
+receivers.notification.toolkit.fluxcd.io                    2026-03-09T03:09:17Z
+runtimepolicies.defender.microsoft.com                      2025-08-13T18:29:12Z
+secretproviderclasses.secrets-store.csi.x-k8s.io            2025-08-13T17:48:16Z
+secretproviderclasspodstatuses.secrets-store.csi.x-k8s.io   2025-08-13T17:48:16Z
+syncpolicies.azurepolicy.azure.com                          2025-08-13T17:57:57Z
+syncsets.syncset.gatekeeper.sh                              2025-08-13T17:57:58Z
+tiers.crd.projectcalico.org                                 2026-03-17T21:29:48Z
+tigerastatuses.operator.tigera.io                           2026-03-17T21:28:56Z
+volumesnapshotclasses.snapshot.storage.k8s.io               2025-08-13T17:47:49Z
+volumesnapshotcontents.snapshot.storage.k8s.io              2025-08-13T17:47:49Z
+volumesnapshots.snapshot.storage.k8s.io                     2025-08-13T17:47:49Z
+---fin--- exit=0 estado=ok
+
+### B.2 Nodos
+
+==================================================
+id: K-10
+descripcion: Nodos
+cuando: 2026-10-26T23:26:23Z
+comando: kubectl get nodes -o wide
+---salida---
+NAME                               STATUS   ROLES    AGE    VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME
+aks-nodepool-41769044-vmss00000y   Ready    <none>   202d   v1.32.6   10.7.114.8    <none>        Ubuntu 22.04.5 LTS   5.15.0-1102-azure   containerd://1.7.30-2
+aks-nodepool-41769044-vmss000016   Ready    <none>   202d   v1.32.6   10.7.114.5    <none>        Ubuntu 22.04.5 LTS   5.15.0-1102-azure   containerd://1.7.30-2
+aks-nodepool-41769044-vmss000017   Ready    <none>   202d   v1.32.6   10.7.114.4    <none>        Ubuntu 22.04.5 LTS   5.15.0-1102-azure   containerd://1.7.30-2
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-11
+descripcion: Pool, tamano y zona
+cuando: 2026-10-26T23:26:24Z
+comando: kubectl get nodes -L kubernetes.azure.com/agentpool,node.kubernetes.io/instance-type,topology.kubernetes.io/zone
+---salida---
+NAME                               STATUS   ROLES    AGE    VERSION   AGENTPOOL   INSTANCE-TYPE    ZONE
+aks-nodepool-41769044-vmss00000y   Ready    <none>   202d   v1.32.6   nodepool    Standard_A2_v2   0
+aks-nodepool-41769044-vmss000016   Ready    <none>   202d   v1.32.6   nodepool    Standard_A2_v2   0
+aks-nodepool-41769044-vmss000017   Ready    <none>   202d   v1.32.6   nodepool    Standard_A2_v2   0
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-12
+descripcion: Uso por nodo
+cuando: 2026-10-26T23:26:24Z
+comando: kubectl top nodes
+---salida---
+NAME                               CPU(cores)   CPU(%)   MEMORY(bytes)   MEMORY(%)   
+aks-nodepool-41769044-vmss00000y   486m         25%      2161Mi          68%         
+aks-nodepool-41769044-vmss000016   516m         27%      2260Mi          71%         
+aks-nodepool-41769044-vmss000017   699m         36%      2439Mi          77%         
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-13
+descripcion: Capacidad y taints
+cuando: 2026-10-26T23:26:25Z
+comando: kubectl describe nodes | grep -E 'Name:|Taints:|Allocatable:|cpu:|memory:|pods:'
+---salida---
+Name:               aks-nodepool-41769044-vmss00000y
+Taints:             <none>
+  cpu:                2
+  memory:             4008020Ki
+  pods:               30
+Allocatable:
+  cpu:                1900m
+  memory:             3240020Ki
+  pods:               30
+Name:               aks-nodepool-41769044-vmss000016
+Taints:             <none>
+  cpu:                2
+  memory:             4008020Ki
+  pods:               30
+Allocatable:
+  cpu:                1900m
+  memory:             3240020Ki
+  pods:               30
+Name:               aks-nodepool-41769044-vmss000017
+Taints:             <none>
+  cpu:                2
+  memory:             4008016Ki
+  pods:               30
+Allocatable:
+  cpu:                1900m
+  memory:             3240016Ki
+  pods:               30
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-14
+descripcion: PodDisruptionBudget y HPA de Backstage
+cuando: 2026-10-26T23:26:27Z
+comando: kubectl -n backstage get poddisruptionbudget,hpa -o wide
+---salida---
+No resources found in backstage namespace.
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-15
+descripcion: Cuotas y limites de recursos
+cuando: 2026-10-26T23:26:28Z
+comando: kubectl get resourcequota,limitrange -A
+---salida---
+No resources found
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-16
+descripcion: PriorityClass
+cuando: 2026-10-26T23:26:29Z
+comando: kubectl get priorityclass -o custom-columns=NAME:.metadata.name,VALUE:.value,GLOBAL:.globalDefault
+---salida---
+NAME                      VALUE        GLOBAL
+system-cluster-critical   2000000000   <none>
+system-node-critical      2000001000   <none>
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-17
+descripcion: Webhooks de admision (solo nombres)
+cuando: 2026-10-26T23:26:30Z
+comando: kubectl get validatingwebhookconfigurations,mutatingwebhookconfigurations -o custom-columns=KIND:.kind,NAME:.metadata.name,WEBHOOKS:.webhooks[*].name
+---salida---
+KIND                             NAME                                              WEBHOOKS
+ValidatingWebhookConfiguration   aks-node-validating-webhook                       aks-node-validating-webhook.azmk8s.io
+ValidatingWebhookConfiguration   azure-policy-validating-webhook-configuration     byovalidation.policy.azure.com,validatepolicyresources.policy.azure.com
+ValidatingWebhookConfiguration   gatekeeper-validating-webhook-configuration       validation.gatekeeper.sh
+ValidatingWebhookConfiguration   ingress-nginx-admission                           validate.nginx.ingress.kubernetes.io
+MutatingWebhookConfiguration     aks-node-mutating-webhook                         aks-node-mutating-webhook.azmk8s.io
+MutatingWebhookConfiguration     aks-webhook-admission-controller                  aks-webhook-admission-controller.azmk8s.io
+MutatingWebhookConfiguration     azure-wi-webhook-mutating-webhook-configuration   mutation.azure-workload-identity.io
+MutatingWebhookConfiguration     gatekeeper-mutating-webhook-configuration         mutation.gatekeeper.sh
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-18
+descripcion: APIs agregadas y disponibilidad
+cuando: 2026-10-26T23:26:31Z
+comando: kubectl get apiservice -o custom-columns=NAME:.metadata.name,AVAILABLE:.status.conditions[?(@.type=="Available")].status,SERVICE:.spec.service.name
+---salida---
+bash: -c: line 1: syntax error near unexpected token `('
+bash: -c: line 1: `kubectl get apiservice -o custom-columns=NAME:.metadata.name,AVAILABLE:.status.conditions[?(@.type=="Available")].status,SERVICE:.spec.service.name'
+---fin--- exit=2 estado=error
+
+### B.3 Namespaces y cargas
+
+==================================================
+id: K-20
+descripcion: Namespaces
+cuando: 2026-10-26T23:26:31Z
+comando: kubectl get ns -o custom-columns=NAME:.metadata.name,STATUS:.status.phase,CREATED:.metadata.creationTimestamp
+---salida---
+NAME                STATUS   CREATED
+aks-command         Active   2026-01-23T16:23:08Z
+backstage           Active   2025-08-14T13:51:12Z
+calico-system       Active   2026-03-17T21:28:59Z
+default             Active   2025-08-13T17:47:28Z
+devops              Active   2026-03-06T17:10:16Z
+flux-system         Active   2026-03-09T03:09:02Z
+gatekeeper-system   Active   2025-08-13T17:57:58Z
+ingress-nginx       Active   2025-08-13T20:31:05Z
+kube-node-lease     Active   2025-08-13T17:47:28Z
+kube-public         Active   2025-08-13T17:47:28Z
+kube-system         Active   2025-08-13T17:47:28Z
+tigera-operator     Active   2026-03-17T21:29:40Z
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-21
+descripcion: Cargas de trabajo
+cuando: 2026-10-26T23:26:31Z
+comando: kubectl get deploy,sts,ds -A -o wide
+---salida---
+NAMESPACE           NAME                                                  READY   UP-TO-DATE   AVAILABLE   AGE    CONTAINERS                          IMAGES                                                                                                                                 SELECTOR
+backstage           deployment.apps/backstage-deployment                  1/1     1            1           231d   backstage                           backstagecoreqas.azurecr.io/backstage:75532                                                                                            app=backstage,managed-by=kustomize
+calico-system       deployment.apps/calico-kube-controllers               1/1     1            1           223d   calico-kube-controllers             mcr.microsoft.com/mirror/quay/calico/kube-controllers:v3.29.7                                                                          k8s-app=calico-kube-controllers
+calico-system       deployment.apps/calico-typha                          2/2     2            2           223d   calico-typha                        mcr.microsoft.com/mirror/quay/calico/typha:v3.29.7                                                                                     k8s-app=calico-typha
+flux-system         deployment.apps/fluxconfig-agent                      1/1     1            1           231d   fluxconfig-agent,fluent-bit         mcr.microsoft.com/azurek8sflux/fluxconfig-agent:1.25.1,mcr.microsoft.com/azurek8sflux/fluent-bit-mdm:1.25.1                            app.kubernetes.io/component=fluxconfig-agent,app.kubernetes.io/name=flux-extension
+flux-system         deployment.apps/fluxconfig-controller                 1/1     1            1           231d   manager,fluent-bit                  mcr.microsoft.com/azurek8sflux/fluxconfig-controller:1.25.1,mcr.microsoft.com/azurek8sflux/fluent-bit-mdm:1.25.1                       control-plane=controller-manager
+flux-system         deployment.apps/helm-controller                       1/1     1            1           231d   manager                             mcr.microsoft.com/oss/v2/fluxcd/helm-controller:v1.5.5-5                                                                               app=helm-controller
+flux-system         deployment.apps/kustomize-controller                  1/1     1            1           231d   manager                             mcr.microsoft.com/oss/v2/fluxcd/kustomize-controller:v1.8.5-5                                                                          app=kustomize-controller
+flux-system         deployment.apps/notification-controller               1/1     1            1           231d   manager                             mcr.microsoft.com/oss/v2/fluxcd/notification-controller:v1.8.4-6                                                                       app=notification-controller
+flux-system         deployment.apps/source-controller                     1/1     1            1           231d   manager                             mcr.microsoft.com/oss/v2/fluxcd/source-controller:v1.8.5-6                                                                             app=source-controller
+gatekeeper-system   deployment.apps/gatekeeper-audit                      1/1     1            1           439d   gatekeeper-audit-container          mcr.microsoft.com/oss/v2/open-policy-agent/gatekeeper:v3.23.1-5                                                                        control-plane=audit-controller,gatekeeper.sh/operation=audit,gatekeeper.sh/system=yes
+gatekeeper-system   deployment.apps/gatekeeper-controller                 2/2     2            2           439d   gatekeeper-controller-container     mcr.microsoft.com/oss/v2/open-policy-agent/gatekeeper:v3.23.1-5                                                                        control-plane=controller-manager,gatekeeper.sh/operation=webhook,gatekeeper.sh/system=yes
+ingress-nginx       deployment.apps/ingress-nginx-controller              1/1     1            1           439d   controller                          registry.k8s.io/ingress-nginx/controller:v1.14.3@sha256:82917be97c0939f6ada1717bb39aa7e66c229d6cfb10dcfc8f1bd42f9efe0f81               app.kubernetes.io/component=controller,app.kubernetes.io/instance=ingress-nginx,app.kubernetes.io/name=ingress-nginx
+kube-system         deployment.apps/azure-policy                          1/1     1            1           439d   azure-policy                        mcr.microsoft.com/azure-policy/v2/policy-kubernetes-addon-prod:v1.17.2-1                                                               app=azure-policy
+kube-system         deployment.apps/azure-policy-webhook                  1/1     1            1           439d   azure-policy-webhook                mcr.microsoft.com/azure-policy/v2/policy-kubernetes-webhook:v1.17.2-1                                                                  app=azure-policy-webhook
+kube-system         deployment.apps/azure-wi-webhook-controller-manager   2/2     2            2           439d   manager                             mcr.microsoft.com/oss/v2/azure/workload-identity/webhook:v1.5.1-27                                                                     azure-workload-identity.io/system=true,kubernetes.azure.com/managedby=aks
+kube-system         deployment.apps/coredns                               2/2     2            2           439d   coredns                             mcr.microsoft.com/oss/v2/kubernetes/coredns:v1.11.3-36                                                                                 k8s-app=kube-dns,version=v20
+kube-system         deployment.apps/coredns-autoscaler                    1/1     1            1           439d   autoscaler                          mcr.microsoft.com/oss/v2/kubernetes/autoscaler/cluster-proportional-autoscaler:v1.9.0-24                                               k8s-app=coredns-autoscaler
+kube-system         deployment.apps/eraser-controller-manager             1/1     1            1           439d   manager                             mcr.microsoft.com/oss/v2/eraser/eraser-manager:v1.4.2-12                                                                               app.kubernetes.io/name=image-cleaner,control-plane=controller-manager
+kube-system         deployment.apps/konnectivity-agent                    2/2     2            2           439d   konnectivity-agent                  mcr.microsoft.com/oss/v2/kubernetes/apiserver-network-proxy/agent:v0.32.1-16                                                           app=konnectivity-agent
+kube-system         deployment.apps/konnectivity-agent-autoscaler         1/1     1            1           439d   autoscaler                          mcr.microsoft.com/oss/v2/kubernetes/autoscaler/cluster-proportional-autoscaler:v1.9.0-24                                               app=konnectivity-agent-autoscaler
+kube-system         deployment.apps/metrics-server                        2/2     2            2           439d   metrics-server-vpa,metrics-server   mcr.microsoft.com/oss/v2/kubernetes/autoscaler/addon-resizer:v1.8.23-31,mcr.microsoft.com/oss/v2/kubernetes/metrics-server:v0.7.2-31   k8s-app=metrics-server
+kube-system         deployment.apps/microsoft-defender-collector-misc     1/1     1            1           439d   microsoft-defender-pod-collector    mcr.microsoft.com/azuredefender/stable/pod-collector:1.0.273                                                                           deploymentName=microsoft-defender-collector-misc
+tigera-operator     deployment.apps/tigera-operator                       1/1     1            1           223d   tigera-operator                     mcr.microsoft.com/mirror/quay/tigera/operator:v1.36.16                                                                                 name=tigera-operator
+
+NAMESPACE       NAME                                                      DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR              AGE    CONTAINERS                                                                IMAGES                                                                                                                                                                                                              SELECTOR
+calico-system   daemonset.apps/calico-node                                3         3         3       3            3           kubernetes.io/os=linux     223d   calico-node                                                               mcr.microsoft.com/mirror/quay/calico/node:v3.29.7                                                                                                                                                                   k8s-app=calico-node
+kube-system     daemonset.apps/aks-secrets-store-csi-driver               3         3         3       3            3           <none>                     439d   node-driver-registrar,secrets-store,liveness-probe                        mcr.microsoft.com/oss/v2/kubernetes-csi/csi-node-driver-registrar:v2.18.0-3,mcr.microsoft.com/oss/v2/kubernetes-csi/secrets-store/driver:v1.5.7-1,mcr.microsoft.com/oss/v2/kubernetes-csi/livenessprobe:v2.20.0-3   app=secrets-store-csi-driver
+kube-system     daemonset.apps/aks-secrets-store-csi-driver-windows       0         0         0       0            0           <none>                     439d   node-driver-registrar,secrets-store,liveness-probe                        mcr.microsoft.com/oss/v2/kubernetes-csi/csi-node-driver-registrar:v2.18.0-3,mcr.microsoft.com/oss/v2/kubernetes-csi/secrets-store/driver:v1.5.7-1,mcr.microsoft.com/oss/v2/kubernetes-csi/livenessprobe:v2.20.0-3   app=secrets-store-csi-driver
+kube-system     daemonset.apps/aks-secrets-store-provider-azure           3         3         3       3            3           kubernetes.io/os=linux     439d   provider-azure-installer                                                  mcr.microsoft.com/oss/v2/azure/secrets-store/provider-azure:v1.8.2-11                                                                                                                                               app=secrets-store-provider-azure
+kube-system     daemonset.apps/aks-secrets-store-provider-azure-windows   0         0         0       0            0           kubernetes.io/os=windows   439d   provider-azure-installer                                                  mcr.microsoft.com/oss/v2/azure/secrets-store/provider-azure:v1.8.2-11                                                                                                                                               app=secrets-store-provider-azure
+kube-system     daemonset.apps/azure-cns                                  3         3         3       3            3           <none>                     439d   cns-container                                                             mcr.microsoft.com/containernetworking/azure-cns:v1.6.43-0                                                                                                                                                           k8s-app=azure-cns
+kube-system     daemonset.apps/azure-cns-win                              0         0         0       0            0           <none>                     439d   cns-container                                                             mcr.microsoft.com/containernetworking/azure-cns:v1.6.43-0                                                                                                                                                           k8s-app=azure-cns-win
+kube-system     daemonset.apps/azure-ip-masq-agent                        3         3         3       3            3           <none>                     439d   azure-ip-masq-agent                                                       mcr.microsoft.com/oss/v2/azure/ip-masq-agent-v2:v0.1.16-17                                                                                                                                                          k8s-app=azure-ip-masq-agent,tier=node
+kube-system     daemonset.apps/cloud-node-manager                         3         3         3       3            3           <none>                     439d   cloud-node-manager                                                        mcr.microsoft.com/oss/v2/kubernetes/azure-cloud-node-manager:v1.32.21-1                                                                                                                                             k8s-app=cloud-node-manager
+kube-system     daemonset.apps/cloud-node-manager-windows                 0         0         0       0            0           <none>                     439d   cloud-node-manager                                                        mcr.microsoft.com/oss/v2/kubernetes/azure-cloud-node-manager:v1.32.21-windows-hpc-1                                                                                                                                 k8s-app=cloud-node-manager-windows
+kube-system     daemonset.apps/csi-azuredisk-node                         3         3         3       3            3           <none>                     439d   liveness-probe,node-driver-registrar,azuredisk                            mcr.microsoft.com/oss/v2/kubernetes-csi/livenessprobe:v2.17.0-14,mcr.microsoft.com/oss/v2/kubernetes-csi/csi-node-driver-registrar:v2.15.0-13,mcr.microsoft.com/oss/v2/kubernetes-csi/azuredisk-csi:v1.32.12-15     app=csi-azuredisk-node
+kube-system     daemonset.apps/csi-azuredisk-node-win                     0         0         0       0            0           <none>                     439d   node-driver-registrar,azuredisk                                           mcr.microsoft.com/oss/v2/kubernetes-csi/csi-node-driver-registrar:v2.15.0-13,mcr.microsoft.com/oss/v2/kubernetes-csi/azuredisk-csi:v1.32.12-windows-hp                                                              app=csi-azuredisk-node-win
+kube-system     daemonset.apps/csi-azurefile-node                         3         3         3       3            3           <none>                     439d   liveness-probe,node-driver-registrar,azurefile                            mcr.microsoft.com/oss/v2/kubernetes-csi/livenessprobe:v2.17.0-14,mcr.microsoft.com/oss/v2/kubernetes-csi/csi-node-driver-registrar:v2.15.0-13,mcr.microsoft.com/oss/v2/kubernetes-csi/azurefile-csi:v1.32.9         app=csi-azurefile-node
+kube-system     daemonset.apps/csi-azurefile-node-win                     0         0         0       0            0           <none>                     439d   node-driver-registrar,azurefile                                           mcr.microsoft.com/oss/v2/kubernetes-csi/csi-node-driver-registrar:v2.15.0-13,mcr.microsoft.com/oss/v2/kubernetes-csi/azurefile-csi:v1.32.9-windows-hp                                                               app=csi-azurefile-node-win
+kube-system     daemonset.apps/kube-proxy                                 3         3         3       3            3           <none>                     439d   kube-proxy                                                                mcr.microsoft.com/oss/v2/kubernetes/kube-proxy:v1.32.6-7                                                                                                                                                            component=kube-proxy,tier=node
+kube-system     daemonset.apps/microsoft-defender-collector-ds            3         3         3       3            3           <none>                     439d   microsoft-defender-pod-collector,microsoft-defender-low-level-collector   mcr.microsoft.com/azuredefender/stable/pod-collector:1.0.273,mcr.microsoft.com/azuredefender/stable/low-level-collector:2.0.262                                                                                     dsName=microsoft-defender-collector
+kube-system     daemonset.apps/microsoft-defender-publisher-ds            3         3         3       3            3           <none>                     439d   microsoft-defender-publisher                                              mcr.microsoft.com/azuredefender/stable/security-publisher:1.1.73                                                                                                                                                    dsName=microsoft-defender-publisher-ds
+kube-system     daemonset.apps/windows-kube-proxy-initializer             0         0         0       0            0           <none>                     439d   pause                                                                     mcr.microsoft.com/oss/v2/kubernetes/pause:3.10.1                                                                                                                                                                    k8s-app=windows-kube-proxy-initializer
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-22
+descripcion: Pods
+cuando: 2026-10-26T23:26:33Z
+comando: kubectl get pods -A -o wide
+---salida---
+NAMESPACE           NAME                                                  READY   STATUS                   RESTARTS      AGE     IP             NODE                               NOMINATED NODE   READINESS GATES
+backstage           backstage-deployment-6674bd47c9-c29vc                 1/1     Running                  0             6d22h   10.244.0.43    aks-nodepool-41769044-vmss000017   <none>           <none>
+backstage           backstage-deployment-6674bd47c9-n74fd                 0/1     Completed                0             202d    10.244.2.146   aks-nodepool-41769044-vmss00000y   <none>           <none>
+calico-system       calico-kube-controllers-5644bb76b5-wbpct              1/1     Running                  0             202d    10.244.0.128   aks-nodepool-41769044-vmss000017   <none>           <none>
+calico-system       calico-node-4q9qn                                     1/1     Running                  0             74d     10.7.114.4     aks-nodepool-41769044-vmss000017   <none>           <none>
+calico-system       calico-node-8hng4                                     1/1     Running                  0             74d     10.7.114.5     aks-nodepool-41769044-vmss000016   <none>           <none>
+calico-system       calico-node-h4nct                                     1/1     Running                  0             74d     10.7.114.8     aks-nodepool-41769044-vmss00000y   <none>           <none>
+calico-system       calico-typha-689fb44f4c-jr7pn                         1/1     Running                  0             74d     10.7.114.4     aks-nodepool-41769044-vmss000017   <none>           <none>
+calico-system       calico-typha-689fb44f4c-lwx4p                         1/1     Running                  0             74d     10.7.114.8     aks-nodepool-41769044-vmss00000y   <none>           <none>
+flux-system         fluxconfig-agent-68dc9c5d58-hqzvv                     2/2     Running                  0             34d     10.244.1.147   aks-nodepool-41769044-vmss000016   <none>           <none>
+flux-system         fluxconfig-controller-79888695b9-cqb4g                2/2     Running                  1 (34d ago)   34d     10.244.1.221   aks-nodepool-41769044-vmss000016   <none>           <none>
+flux-system         fluxconfig-controller-85bf5fb7b7-rbk2j                0/2     ContainerStatusUnknown   2             202d    <none>         aks-nodepool-41769044-vmss00000y   <none>           <none>
+flux-system         helm-controller-8659ccdf54-6pgc9                      1/1     Running                  0             34d     10.244.1.254   aks-nodepool-41769044-vmss000016   <none>           <none>
+flux-system         kustomize-controller-565d48c566-cmd2k                 1/1     Running                  0             34d     10.244.1.131   aks-nodepool-41769044-vmss000016   <none>           <none>
+flux-system         notification-controller-677c69bc85-hl5dj              1/1     Running                  0             14d     10.244.1.130   aks-nodepool-41769044-vmss000016   <none>           <none>
+flux-system         notification-controller-677c69bc85-vpmd9              0/1     Completed                0             34d     10.244.2.10    aks-nodepool-41769044-vmss00000y   <none>           <none>
+flux-system         source-controller-7b76b5c9bd-b7pqm                    1/1     Running                  0             34d     10.244.1.229   aks-nodepool-41769044-vmss000016   <none>           <none>
+gatekeeper-system   gatekeeper-audit-7644d6d449-85gpx                     1/1     Running                  0             13d     10.244.2.162   aks-nodepool-41769044-vmss00000y   <none>           <none>
+gatekeeper-system   gatekeeper-controller-569fcf49d5-67hqb                1/1     Running                  0             13d     10.244.2.188   aks-nodepool-41769044-vmss00000y   <none>           <none>
+gatekeeper-system   gatekeeper-controller-569fcf49d5-mpgmg                1/1     Running                  0             13d     10.244.1.100   aks-nodepool-41769044-vmss000016   <none>           <none>
+ingress-nginx       ingress-nginx-controller-54cdc65f99-dznst             1/1     Running                  0             202d    10.244.0.255   aks-nodepool-41769044-vmss000017   <none>           <none>
+kube-system         aks-secrets-store-csi-driver-d5nfl                    3/3     Running                  2 (13d ago)   13d     10.244.0.229   aks-nodepool-41769044-vmss000017   <none>           <none>
+kube-system         aks-secrets-store-csi-driver-f25hq                    3/3     Running                  0             13d     10.244.2.170   aks-nodepool-41769044-vmss00000y   <none>           <none>
+kube-system         aks-secrets-store-csi-driver-p5bkt                    3/3     Running                  2 (13d ago)   13d     10.244.1.77    aks-nodepool-41769044-vmss000016   <none>           <none>
+kube-system         aks-secrets-store-provider-azure-5wpm9                1/1     Running                  0             13d     10.7.114.5     aks-nodepool-41769044-vmss000016   <none>           <none>
+kube-system         aks-secrets-store-provider-azure-q8gwx                1/1     Running                  0             13d     10.7.114.8     aks-nodepool-41769044-vmss00000y   <none>           <none>
+kube-system         aks-secrets-store-provider-azure-v55sv                1/1     Running                  0             13d     10.7.114.4     aks-nodepool-41769044-vmss000017   <none>           <none>
+kube-system         azure-cns-brvp7                                       1/1     Running                  0             35d     10.7.114.8     aks-nodepool-41769044-vmss00000y   <none>           <none>
+kube-system         azure-cns-l4gtt                                       1/1     Running                  0             35d     10.7.114.5     aks-nodepool-41769044-vmss000016   <none>           <none>
+kube-system         azure-cns-qkbwf                                       1/1     Running                  0             35d     10.7.114.4     aks-nodepool-41769044-vmss000017   <none>           <none>
+kube-system         azure-ip-masq-agent-6hz9h                             1/1     Running                  0             14d     10.7.114.8     aks-nodepool-41769044-vmss00000y   <none>           <none>
+kube-system         azure-ip-masq-agent-jnpl5                             1/1     Running                  0             14d     10.7.114.4     aks-nodepool-41769044-vmss000017   <none>           <none>
+kube-system         azure-ip-masq-agent-lp26p                             1/1     Running                  0             14d     10.7.114.5     aks-nodepool-41769044-vmss000016   <none>           <none>
+kube-system         azure-policy-565984f4-fzp69                           1/1     Running                  0             13d     10.244.2.251   aks-nodepool-41769044-vmss00000y   <none>           <none>
+kube-system         azure-policy-webhook-57669dff8f-jxwkd                 1/1     Running                  0             13d     10.244.2.249   aks-nodepool-41769044-vmss00000y   <none>           <none>
+kube-system         azure-wi-webhook-controller-manager-77d67fc96-m9p2z   1/1     Running                  0             3h24m   10.244.0.58    aks-nodepool-41769044-vmss000017   <none>           <none>
+kube-system         azure-wi-webhook-controller-manager-77d67fc96-sgdc7   1/1     Running                  0             3h24m   10.244.2.11    aks-nodepool-41769044-vmss00000y   <none>           <none>
+kube-system         cloud-node-manager-dxm2v                              1/1     Running                  0             13d     10.7.114.8     aks-nodepool-41769044-vmss00000y   <none>           <none>
+kube-system         cloud-node-manager-lkgq7                              1/1     Running                  0             13d     10.7.114.5     aks-nodepool-41769044-vmss000016   <none>           <none>
+kube-system         cloud-node-manager-x5nb6                              1/1     Running                  0             13d     10.7.114.4     aks-nodepool-41769044-vmss000017   <none>           <none>
+kube-system         coredns-5899f74bf9-grzpd                              1/1     Running                  0             14d     10.244.1.113   aks-nodepool-41769044-vmss000016   <none>           <none>
+kube-system         coredns-5899f74bf9-t7t4x                              1/1     Running                  0             14d     10.244.0.200   aks-nodepool-41769044-vmss000017   <none>           <none>
+kube-system         coredns-autoscaler-797dc56dfc-pqjdx                   1/1     Running                  0             14d     10.244.1.248   aks-nodepool-41769044-vmss000016   <none>           <none>
+kube-system         csi-azuredisk-node-8hjng                              3/3     Running                  0             39d     10.7.114.4     aks-nodepool-41769044-vmss000017   <none>           <none>
+kube-system         csi-azuredisk-node-w8jrl                              3/3     Running                  0             39d     10.7.114.8     aks-nodepool-41769044-vmss00000y   <none>           <none>
+kube-system         csi-azuredisk-node-wgw2s                              3/3     Running                  0             39d     10.7.114.5     aks-nodepool-41769044-vmss000016   <none>           <none>
+kube-system         csi-azurefile-node-7pgqf                              3/3     Running                  0             39d     10.7.114.5     aks-nodepool-41769044-vmss000016   <none>           <none>
+kube-system         csi-azurefile-node-7vhht                              3/3     Running                  0             39d     10.7.114.8     aks-nodepool-41769044-vmss00000y   <none>           <none>
+kube-system         csi-azurefile-node-9qljm                              3/3     Running                  0             39d     10.7.114.4     aks-nodepool-41769044-vmss000017   <none>           <none>
+kube-system         eraser-controller-manager-747548b878-nnnlr            1/1     Running                  0             3h24m   10.244.2.132   aks-nodepool-41769044-vmss00000y   <none>           <none>
+kube-system         konnectivity-agent-6d789995bb-jfvxd                   1/1     Running                  0             13d     10.244.2.60    aks-nodepool-41769044-vmss00000y   <none>           <none>
+kube-system         konnectivity-agent-6d789995bb-pxb7l                   1/1     Running                  0             13d     10.244.0.207   aks-nodepool-41769044-vmss000017   <none>           <none>
+kube-system         konnectivity-agent-autoscaler-6cc4df47c-87hhs         1/1     Running                  0             13d     10.244.2.226   aks-nodepool-41769044-vmss00000y   <none>           <none>
+kube-system         kube-proxy-hc82d                                      1/1     Running                  0             196d    10.7.114.5     aks-nodepool-41769044-vmss000016   <none>           <none>
+kube-system         kube-proxy-n2hwj                                      1/1     Running                  0             196d    10.7.114.4     aks-nodepool-41769044-vmss000017   <none>           <none>
+kube-system         kube-proxy-psj97                                      1/1     Running                  0             196d    10.7.114.8     aks-nodepool-41769044-vmss00000y   <none>           <none>
+kube-system         metrics-server-ccf967474-6pd8g                        2/2     Running                  0             13d     10.244.2.73    aks-nodepool-41769044-vmss00000y   <none>           <none>
+kube-system         metrics-server-ccf967474-d24zh                        2/2     Running                  0             13d     10.244.1.188   aks-nodepool-41769044-vmss000016   <none>           <none>
+kube-system         microsoft-defender-collector-ds-bl5vb                 2/2     Running                  0             13d     10.7.114.4     aks-nodepool-41769044-vmss000017   <none>           <none>
+kube-system         microsoft-defender-collector-ds-ht67n                 2/2     Running                  0             13d     10.7.114.5     aks-nodepool-41769044-vmss000016   <none>           <none>
+kube-system         microsoft-defender-collector-ds-rs5wc                 2/2     Running                  0             7d3h    10.7.114.8     aks-nodepool-41769044-vmss00000y   <none>           <none>
+kube-system         microsoft-defender-collector-misc-94fdfb9cc-7k5wh     1/1     Running                  0             13d     10.244.0.214   aks-nodepool-41769044-vmss000017   <none>           <none>
+kube-system         microsoft-defender-publisher-ds-6qv6d                 1/1     Running                  0             13d     10.244.0.246   aks-nodepool-41769044-vmss000017   <none>           <none>
+kube-system         microsoft-defender-publisher-ds-bjsbv                 1/1     Running                  0             13d     10.244.2.65    aks-nodepool-41769044-vmss00000y   <none>           <none>
+kube-system         microsoft-defender-publisher-ds-z259k                 1/1     Running                  0             13d     10.244.1.168   aks-nodepool-41769044-vmss000016   <none>           <none>
+tigera-operator     tigera-operator-7b4db4787-phdzp                       1/1     Running                  6 (12d ago)   74d     10.7.114.5     aks-nodepool-41769044-vmss000016   <none>           <none>
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-23
+descripcion: Pods no Running
+cuando: 2026-10-26T23:26:34Z
+comando: kubectl get pods -A --field-selector=status.phase!=Running
+---salida---
+NAMESPACE     NAME                                       READY   STATUS                   RESTARTS   AGE
+backstage     backstage-deployment-6674bd47c9-n74fd      0/1     Completed                0          202d
+flux-system   fluxconfig-controller-85bf5fb7b7-rbk2j     0/2     ContainerStatusUnknown   2          202d
+flux-system   notification-controller-677c69bc85-vpmd9   0/1     Completed                0          34d
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-24
+descripcion: Jobs y CronJobs
+cuando: 2026-10-26T23:26:35Z
+comando: kubectl get jobs,cronjobs -A
+---salida---
+No resources found
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-25
+descripcion: Servicios
+cuando: 2026-10-26T23:26:36Z
+comando: kubectl get svc -A -o wide
+---salida---
+NAMESPACE           NAME                                 TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)                      AGE    SELECTOR
+backstage           backstage-service                    ClusterIP      10.0.164.3     <none>        7007/TCP                     437d   app=backstage,managed-by=kustomize
+calico-system       calico-kube-controllers-metrics      ClusterIP      None           <none>        9094/TCP                     223d   k8s-app=calico-kube-controllers
+calico-system       calico-typha                         ClusterIP      10.0.18.126    <none>        5473/TCP                     223d   k8s-app=calico-typha
+default             kubernetes                           ClusterIP      10.0.0.1       <none>        443/TCP                      439d   <none>
+flux-system         notification-controller              ClusterIP      10.0.10.12     <none>        80/TCP                       231d   app=notification-controller
+flux-system         source-controller                    ClusterIP      10.0.179.101   <none>        80/TCP                       231d   app=source-controller
+flux-system         webhook-receiver                     ClusterIP      10.0.231.97    <none>        80/TCP                       231d   app=notification-controller,role=webhook-receiver
+gatekeeper-system   gatekeeper-webhook-service           ClusterIP      10.0.165.86    <none>        443/TCP                      439d   control-plane=controller-manager,gatekeeper.sh/operation=webhook,gatekeeper.sh/system=yes
+ingress-nginx       ingress-nginx-controller             LoadBalancer   10.0.135.242   10.7.114.7    80:30125/TCP,443:32020/TCP   439d   app.kubernetes.io/component=controller,app.kubernetes.io/instance=ingress-nginx,app.kubernetes.io/name=ingress-nginx
+ingress-nginx       ingress-nginx-controller-admission   ClusterIP      10.0.137.195   <none>        443/TCP                      439d   app.kubernetes.io/component=controller,app.kubernetes.io/instance=ingress-nginx,app.kubernetes.io/name=ingress-nginx
+kube-system         azure-policy-webhook-service         ClusterIP      10.0.189.200   <none>        443/TCP                      439d   app=azure-policy-webhook
+kube-system         azure-wi-webhook-webhook-service     ClusterIP      10.0.73.212    <none>        443/TCP                      439d   azure-workload-identity.io/system=true,kubernetes.azure.com/managedby=aks
+kube-system         kube-dns                             ClusterIP      10.0.0.10      <none>        53/UDP,53/TCP                439d   k8s-app=kube-dns
+kube-system         metrics-server                       ClusterIP      10.0.16.73     <none>        443/TCP                      439d   k8s-app=metrics-server
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-26
+descripcion: Ingress
+cuando: 2026-10-26T23:26:37Z
+comando: kubectl get ingress -A
+---salida---
+NAMESPACE   NAME                CLASS   HOSTS                          ADDRESS      PORTS     AGE
+backstage   backstage-ingress   nginx   backstageqas.colsubsidio.com   10.7.114.7   80, 443   438d
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-27
+descripcion: Ultimos eventos
+cuando: 2026-10-26T23:26:38Z
+comando: kubectl get events -A --sort-by=.lastTimestamp | tail -n 50
+---salida---
+NAMESPACE     LAST SEEN   TYPE      REASON                    OBJECT                                               MESSAGE
+backstage     56m         Normal    ReconciliationSucceeded   kustomization/deploy-backstage-kustomization-qa      Reconciliation finished in 1.286011246s, next run in 10m0s
+backstage     46m         Normal    ReconciliationSucceeded   kustomization/deploy-backstage-kustomization-qa      Reconciliation finished in 1.574057803s, next run in 10m0s
+backstage     36m         Normal    ReconciliationSucceeded   kustomization/deploy-backstage-kustomization-qa      Reconciliation finished in 1.47231676s, next run in 10m0s
+backstage     26m         Normal    ReconciliationSucceeded   kustomization/deploy-backstage-kustomization-qa      Reconciliation finished in 962.361151ms, next run in 10m0s
+backstage     16m         Normal    ReconciliationSucceeded   kustomization/deploy-backstage-kustomization-qa      Reconciliation finished in 1.116907576s, next run in 10m0s
+kube-system   10m         Normal    UpdatedNC                 nodenetworkconfig/aks-nodepool-41769044-vmss00000y   Published NC <guid-redactado>
+kube-system   10m         Normal    UpdatedNC                 nodenetworkconfig/aks-nodepool-41769044-vmss000016   Published NC <guid-redactado>
+kube-system   10m         Normal    UpdatedNC                 nodenetworkconfig/aks-nodepool-41769044-vmss000017   Published NC <guid-redactado>
+backstage     10m         Warning   GitOperationFailed        gitrepository/deploy-backstage                       failed to checkout and determine revision: unable to list remote for 'https://ColsubsidioDigital@dev.azure.com/ColsubsidioDigital/Platform%20Engineering/_git/idp-colsubsidio': repository not found: TF401019: The Git repository with name or identifier idp-colsubsidio does not exist or you do not have permissions for the operation you are attempting.
+backstage     7m21s       Normal    ReconciliationSucceeded   kustomization/deploy-backstage-kustomization-qa      Reconciliation finished in 887.882869ms, next run in 10m0s
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-28
+descripcion: Pods por memoria
+cuando: 2026-10-26T23:26:39Z
+comando: kubectl top pods -A --sort-by=memory | head -n 30
+---salida---
+NAMESPACE           NAME                                                  CPU(cores)   MEMORY(bytes)   
+backstage           backstage-deployment-6674bd47c9-c29vc                 52m          450Mi           
+calico-system       calico-kube-controllers-5644bb76b5-wbpct              6m           204Mi           
+calico-system       calico-node-h4nct                                     19m          149Mi           
+calico-system       calico-node-4q9qn                                     21m          149Mi           
+calico-system       calico-node-8hng4                                     22m          145Mi           
+tigera-operator     tigera-operator-7b4db4787-phdzp                       9m           125Mi           
+flux-system         fluxconfig-agent-68dc9c5d58-hqzvv                     1m           101Mi           
+kube-system         microsoft-defender-publisher-ds-6qv6d                 8m           100Mi           
+flux-system         fluxconfig-controller-79888695b9-cqb4g                4m           99Mi            
+gatekeeper-system   gatekeeper-controller-569fcf49d5-mpgmg                12m          94Mi            
+kube-system         microsoft-defender-publisher-ds-bjsbv                 3m           91Mi            
+kube-system         microsoft-defender-publisher-ds-z259k                 4m           91Mi            
+kube-system         microsoft-defender-collector-ds-bl5vb                 34m          85Mi            
+gatekeeper-system   gatekeeper-controller-569fcf49d5-67hqb                13m          84Mi            
+kube-system         microsoft-defender-collector-ds-rs5wc                 21m          79Mi            
+kube-system         microsoft-defender-collector-ds-ht67n                 20m          78Mi            
+gatekeeper-system   gatekeeper-audit-7644d6d449-85gpx                     4m           65Mi            
+kube-system         aks-secrets-store-csi-driver-d5nfl                    9m           61Mi            
+kube-system         aks-secrets-store-csi-driver-p5bkt                    9m           60Mi            
+kube-system         aks-secrets-store-csi-driver-f25hq                    8m           57Mi            
+ingress-nginx       ingress-nginx-controller-54cdc65f99-dznst             2m           56Mi            
+flux-system         kustomize-controller-565d48c566-cmd2k                 2m           56Mi            
+kube-system         metrics-server-ccf967474-6pd8g                        4m           55Mi            
+kube-system         csi-azurefile-node-7pgqf                              1m           55Mi            
+kube-system         csi-azurefile-node-9qljm                              1m           55Mi            
+kube-system         metrics-server-ccf967474-d24zh                        4m           51Mi            
+kube-system         csi-azuredisk-node-w8jrl                              1m           50Mi            
+kube-system         csi-azuredisk-node-8hjng                              1m           50Mi            
+kube-system         csi-azurefile-node-7vhht                              1m           49Mi            
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-29
+descripcion: Imagenes en uso
+cuando: 2026-10-26T23:26:40Z
+comando: kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{range .spec.containers[*]}{.image}{"\n"}{end}{end}' | sort -u
+---salida---
+backstage	backstagecoreqas.azurecr.io/backstage:75532
+calico-system	mcr.microsoft.com/mirror/quay/calico/kube-controllers:v3.29.7
+calico-system	mcr.microsoft.com/mirror/quay/calico/node:v3.29.7
+calico-system	mcr.microsoft.com/mirror/quay/calico/typha:v3.29.7
+flux-system	mcr.microsoft.com/azurek8sflux/fluxconfig-agent:1.25.1
+flux-system	mcr.microsoft.com/azurek8sflux/fluxconfig-controller:1.21.0
+flux-system	mcr.microsoft.com/azurek8sflux/fluxconfig-controller:1.25.1
+flux-system	mcr.microsoft.com/oss/v2/fluxcd/helm-controller:v1.5.5-5
+flux-system	mcr.microsoft.com/oss/v2/fluxcd/kustomize-controller:v1.8.5-5
+flux-system	mcr.microsoft.com/oss/v2/fluxcd/notification-controller:v1.8.4-6
+flux-system	mcr.microsoft.com/oss/v2/fluxcd/source-controller:v1.8.5-6
+gatekeeper-system	mcr.microsoft.com/oss/v2/open-policy-agent/gatekeeper:v3.23.1-5
+ingress-nginx	registry.k8s.io/ingress-nginx/controller:v1.14.3@sha256:82917be97c0939f6ada1717bb39aa7e66c229d6cfb10dcfc8f1bd42f9efe0f81
+kube-system	mcr.microsoft.com/azure-policy/v2/policy-kubernetes-addon-prod:v1.17.2-1
+kube-system	mcr.microsoft.com/azure-policy/v2/policy-kubernetes-webhook:v1.17.2-1
+kube-system	mcr.microsoft.com/azuredefender/stable/pod-collector:1.0.273
+kube-system	mcr.microsoft.com/azuredefender/stable/security-publisher:1.1.73
+kube-system	mcr.microsoft.com/containernetworking/azure-cns:v1.6.43-0
+kube-system	mcr.microsoft.com/oss/v2/azure/ip-masq-agent-v2:v0.1.16-17
+kube-system	mcr.microsoft.com/oss/v2/azure/secrets-store/provider-azure:v1.8.2-11
+kube-system	mcr.microsoft.com/oss/v2/azure/workload-identity/webhook:v1.5.1-27
+kube-system	mcr.microsoft.com/oss/v2/eraser/eraser-manager:v1.4.2-12
+kube-system	mcr.microsoft.com/oss/v2/kubernetes-csi/csi-node-driver-registrar:v2.18.0-3
+kube-system	mcr.microsoft.com/oss/v2/kubernetes-csi/livenessprobe:v2.17.0-14
+kube-system	mcr.microsoft.com/oss/v2/kubernetes/apiserver-network-proxy/agent:v0.32.1-16
+kube-system	mcr.microsoft.com/oss/v2/kubernetes/autoscaler/addon-resizer:v1.8.23-31
+kube-system	mcr.microsoft.com/oss/v2/kubernetes/autoscaler/cluster-proportional-autoscaler:v1.9.0-24
+kube-system	mcr.microsoft.com/oss/v2/kubernetes/azure-cloud-node-manager:v1.32.21-1
+kube-system	mcr.microsoft.com/oss/v2/kubernetes/coredns:v1.11.3-36
+kube-system	mcr.microsoft.com/oss/v2/kubernetes/kube-proxy:v1.32.6-7
+mcr.microsoft.com/azuredefender/stable/low-level-collector:2.0.262
+mcr.microsoft.com/azurek8sflux/fluent-bit-mdm:1.21.0
+mcr.microsoft.com/azurek8sflux/fluent-bit-mdm:1.25.1
+mcr.microsoft.com/oss/v2/kubernetes-csi/azuredisk-csi:v1.32.12-15
+mcr.microsoft.com/oss/v2/kubernetes-csi/azurefile-csi:v1.32.9
+mcr.microsoft.com/oss/v2/kubernetes-csi/csi-node-driver-registrar:v2.15.0-13
+mcr.microsoft.com/oss/v2/kubernetes-csi/livenessprobe:v2.20.0-3
+mcr.microsoft.com/oss/v2/kubernetes-csi/secrets-store/driver:v1.5.7-1
+mcr.microsoft.com/oss/v2/kubernetes/metrics-server:v0.7.2-31
+tigera-operator	mcr.microsoft.com/mirror/quay/tigera/operator:v1.36.16
+---fin--- exit=0 estado=ok
+
+### B.4 Backstage
+
+==================================================
+id: K-30
+descripcion: Objetos de Backstage
+cuando: 2026-10-26T23:26:41Z
+comando: kubectl -n backstage get all -o wide
+---salida---
+NAME                                        READY   STATUS      RESTARTS   AGE     IP             NODE                               NOMINATED NODE   READINESS GATES
+pod/backstage-deployment-6674bd47c9-c29vc   1/1     Running     0          6d22h   10.244.0.43    aks-nodepool-41769044-vmss000017   <none>           <none>
+pod/backstage-deployment-6674bd47c9-n74fd   0/1     Completed   0          202d    10.244.2.146   aks-nodepool-41769044-vmss00000y   <none>           <none>
+
+NAME                        TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)    AGE    SELECTOR
+service/backstage-service   ClusterIP   10.0.164.3   <none>        7007/TCP   437d   app=backstage,managed-by=kustomize
+
+NAME                                   READY   UP-TO-DATE   AVAILABLE   AGE    CONTAINERS   IMAGES                                        SELECTOR
+deployment.apps/backstage-deployment   1/1     1            1           231d   backstage    backstagecoreqas.azurecr.io/backstage:75532   app=backstage,managed-by=kustomize
+
+NAME                                              DESIRED   CURRENT   READY   AGE     CONTAINERS   IMAGES                                        SELECTOR
+replicaset.apps/backstage-deployment-6674bd47c9   1         1         1       203d    backstage    backstagecoreqas.azurecr.io/backstage:75532   app=backstage,managed-by=kustomize,pod-template-hash=6674bd47c9
+replicaset.apps/backstage-deployment-6dfcfcb857   0         0         0       6d22h   backstage    backstagecoreqas.azurecr.io/backstage:75532   app=backstage,managed-by=kustomize,pod-template-hash=6dfcfcb857
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-31
+descripcion: Imagen y replicas
+cuando: 2026-10-26T23:26:44Z
+comando: kubectl -n backstage get deploy backstage-deployment -o jsonpath='image={.spec.template.spec.containers[0].image}{"\n"}replicas={.status.readyReplicas}/{.status.replicas}{"\n"}strategy={.spec.strategy.type}{"\n"}'
+---salida---
+image=backstagecoreqas.azurecr.io/backstage:75532
+replicas=1/1
+strategy=Recreate
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-32
+descripcion: ReplicaSets e imagenes
+cuando: 2026-10-26T23:26:44Z
+comando: kubectl -n backstage get rs -l app=backstage -o custom-columns=NAME:.metadata.name,IMAGE:.spec.template.spec.containers[0].image,READY:.status.readyReplicas
+---salida---
+NAME                              IMAGE                                         READY
+backstage-deployment-6674bd47c9   backstagecoreqas.azurecr.io/backstage:75532   1
+backstage-deployment-6dfcfcb857   backstagecoreqas.azurecr.io/backstage:75532   <none>
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-33
+descripcion: Historial de despliegues
+cuando: 2026-10-26T23:26:45Z
+comando: kubectl -n backstage rollout history deployment/backstage-deployment
+---salida---
+deployment.apps/backstage-deployment 
+REVISION  CHANGE-CAUSE
+36        <none>
+37        <none>
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-34
+descripcion: Estado del pod
+cuando: 2026-10-26T23:26:46Z
+comando: kubectl -n backstage get pod -l app=backstage -o jsonpath='{range .items[*]}{.metadata.name}{" phase="}{.status.phase}{" ready="}{.status.containerStatuses[0].ready}{" restarts="}{.status.containerStatuses[0].restartCount}{"\n"}{end}'
+---salida---
+backstage-deployment-6674bd47c9-c29vc phase=Running ready=true restarts=0
+backstage-deployment-6674bd47c9-n74fd phase=Succeeded ready=false restarts=0
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-35
+descripcion: ConfigMap y Secret usados
+cuando: 2026-10-26T23:26:46Z
+comando: kubectl -n backstage get deploy backstage-deployment -o jsonpath='{range .spec.template.spec.containers[0].envFrom[*]}{.configMapRef.name}{.secretRef.name}{"\n"}{end}'
+---salida---
+backstage-secrets
+backstage-configmap
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-36
+descripcion: Volumenes
+cuando: 2026-10-26T23:26:47Z
+comando: kubectl -n backstage get deploy backstage-deployment -o jsonpath='{range .spec.template.spec.volumes[*]}{.name}{" "}{.persistentVolumeClaim.claimName}{.csi.driver}{" "}{.csi.volumeAttributes.secretProviderClass}{"\n"}{end}'
+---salida---
+docs backstage-pvc 
+kv-secrets secrets-store.csi.k8s.io backstage-azure-keyvault-secrets
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-37
+descripcion: Recursos del contenedor
+cuando: 2026-10-26T23:26:48Z
+comando: kubectl -n backstage get deploy backstage-deployment -o jsonpath='requests={.spec.template.spec.containers[0].resources.requests}{"\n"}limits={.spec.template.spec.containers[0].resources.limits}{"\n"}'
+---salida---
+requests={"cpu":"250m","memory":"1Gi"}
+limits={"cpu":"500m","memory":"2Gi"}
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-38
+descripcion: Rutas de salud
+cuando: 2026-10-26T23:26:48Z
+comando: kubectl -n backstage get deploy backstage-deployment -o jsonpath='liveness={.spec.template.spec.containers[0].livenessProbe.httpGet.path}{"\n"}readiness={.spec.template.spec.containers[0].readinessProbe.httpGet.path}{"\n"}'
+---salida---
+liveness=/healthcheck
+readiness=/healthcheck
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-39
+descripcion: Cuenta de servicio y pull secret
+cuando: 2026-10-26T23:26:49Z
+comando: kubectl -n backstage get deploy backstage-deployment -o jsonpath='sa={.spec.template.spec.serviceAccountName}{"\n"}pull={.spec.template.spec.imagePullSecrets[*].name}{"\n"}'
+---salida---
+sa=
+pull=acr-secret
+---fin--- exit=0 estado=ok
+
+### B.5 Red de Backstage
+
+==================================================
+id: K-40
+descripcion: Ingress de Backstage
+cuando: 2026-10-26T23:26:49Z
+comando: kubectl -n backstage get ingress backstage-ingress -o jsonpath='class={.spec.ingressClassName}{"\n"}host={.spec.rules[0].host}{"\n"}tls={.spec.tls[0].secretName}{"\n"}svc={.spec.rules[0].http.paths[0].backend.service.name}{"\n"}address={.status.loadBalancer.ingress[0].ip}{"\n"}'
+---salida---
+class=nginx
+host=backstageqas.colsubsidio.com
+tls=backstage-tls
+svc=backstage-service
+address=10.7.114.7
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-41
+descripcion: Servicio de Backstage
+cuando: 2026-10-26T23:26:50Z
+comando: kubectl -n backstage get svc backstage-service -o jsonpath='type={.spec.type}{"\n"}port={.spec.ports[0].port}{"\n"}'
+---salida---
+type=ClusterIP
+port=7007
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-42
+descripcion: Endpoints
+cuando: 2026-10-26T23:26:51Z
+comando: kubectl -n backstage get endpoints backstage-service
+---salida---
+NAME                ENDPOINTS          AGE
+backstage-service   10.244.0.43:7007   437d
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-43
+descripcion: Balanceador interno o publico
+cuando: 2026-10-26T23:26:52Z
+comando: kubectl get svc -A -l app.kubernetes.io/name=ingress-nginx -o custom-columns='NS:.metadata.namespace,NAME:.metadata.name,TYPE:.spec.type,IP:.status.loadBalancer.ingress[0].ip,INTERNAL:.metadata.annotations.service\.beta\.kubernetes\.io/azure-load-balancer-internal'
+---salida---
+NS              NAME                                 TYPE           IP           INTERNAL
+ingress-nginx   ingress-nginx-controller             LoadBalancer   10.7.114.7   true
+ingress-nginx   ingress-nginx-controller-admission   ClusterIP      <none>       <none>
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-44
+descripcion: Controlador ingress-nginx
+cuando: 2026-10-26T23:26:52Z
+comando: kubectl -n ingress-nginx get deploy,pods -o wide
+---salida---
+NAME                                       READY   UP-TO-DATE   AVAILABLE   AGE    CONTAINERS   IMAGES                                                                                                                     SELECTOR
+deployment.apps/ingress-nginx-controller   1/1     1            1           439d   controller   registry.k8s.io/ingress-nginx/controller:v1.14.3@sha256:82917be97c0939f6ada1717bb39aa7e66c229d6cfb10dcfc8f1bd42f9efe0f81   app.kubernetes.io/component=controller,app.kubernetes.io/instance=ingress-nginx,app.kubernetes.io/name=ingress-nginx
+
+NAME                                            READY   STATUS    RESTARTS   AGE    IP             NODE                               NOMINATED NODE   READINESS GATES
+pod/ingress-nginx-controller-54cdc65f99-dznst   1/1     Running   0          202d   10.244.0.255   aks-nodepool-41769044-vmss000017   <none>           <none>
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-45
+descripcion: Secreto TLS (solo nombre)
+cuando: 2026-10-26T23:26:53Z
+comando: kubectl -n backstage get secret backstage-tls -o jsonpath='{.metadata.name}{" "}{.type}{"\n"}'
+---salida---
+backstage-tls kubernetes.io/tls
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-46
+descripcion: Emisor y vencimiento del certificado
+cuando: 2026-10-26T23:26:54Z
+comando: kubectl -n backstage get secret backstage-tls -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl x509 -noout -subject -issuer -dates
+---salida---
+subject=C = CO, ST = Cundinamarca, L = Bogota, O = Colsubsidio, OU = Tecnologia, CN = backstageqas.colsubsidio.com
+issuer=DC = com, DC = colsubsidio, CN = ColsubSubCA
+notBefore=Feb 12 21:17:31 2026 GMT
+notAfter=Feb 12 21:17:31 2028 GMT
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-47
+descripcion: NetworkPolicies
+cuando: 2026-10-26T23:26:55Z
+comando: kubectl get networkpolicy -A
+---salida---
+NAMESPACE     NAME                 POD-SELECTOR                  AGE
+flux-system   allow-egress         <none>                        231d
+flux-system   allow-scraping       <none>                        231d
+flux-system   allow-webhooks       app=notification-controller   231d
+kube-system   konnectivity-agent   app=konnectivity-agent        439d
+---fin--- exit=0 estado=ok
+
+### B.6 Almacenamiento
+
+==================================================
+id: K-50
+descripcion: PVC
+cuando: 2026-10-26T23:26:56Z
+comando: kubectl get pvc -A
+---salida---
+NAMESPACE   NAME            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+backstage   backstage-pvc   Bound    pvc-<guid-redactado>   10Gi       RWO            default        <unset>                 437d
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-51
+descripcion: PV
+cuando: 2026-10-26T23:26:57Z
+comando: kubectl get pv -o custom-columns=NAME:.metadata.name,SIZE:.spec.capacity.storage,CLASS:.spec.storageClassName,STATUS:.status.phase,CLAIM:.spec.claimRef.name
+---salida---
+NAME                                       SIZE   CLASS     STATUS   CLAIM
+pvc-<guid-redactado>   10Gi   default   Bound    backstage-pvc
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-52
+descripcion: StorageClass
+cuando: 2026-10-26T23:26:57Z
+comando: kubectl get storageclass
+---salida---
+NAME                    PROVISIONER          RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+azurefile               file.csi.azure.com   Delete          Immediate              true                   439d
+azurefile-csi           file.csi.azure.com   Delete          Immediate              true                   439d
+azurefile-csi-premium   file.csi.azure.com   Delete          Immediate              true                   439d
+azurefile-premium       file.csi.azure.com   Delete          Immediate              true                   439d
+default (default)       disk.csi.azure.com   Delete          WaitForFirstConsumer   true                   439d
+managed                 disk.csi.azure.com   Delete          WaitForFirstConsumer   true                   439d
+managed-csi             disk.csi.azure.com   Delete          WaitForFirstConsumer   true                   439d
+managed-csi-premium     disk.csi.azure.com   Delete          WaitForFirstConsumer   true                   439d
+managed-premium         disk.csi.azure.com   Delete          WaitForFirstConsumer   true                   439d
+---fin--- exit=0 estado=ok
+
+### B.7 Configuracion y secretos (solo nombres)
+
+==================================================
+id: K-60
+descripcion: Claves del ConfigMap
+cuando: 2026-10-26T23:26:58Z
+comando: kubectl -n backstage get configmap backstage-configmap -o go-template='{{range $k,$v := .data}}{{$k}}{{"\n"}}{{end}}'
+---salida---
+APIGEE_USER
+AZURE_CLIENT_ID_COLS
+AZURE_TENANT_ID_COLS
+BACKEND_URL
+POSTGRES_DB
+POSTGRES_HOST
+POSTGRES_PORT
+POSTGRES_USER
+RABBITMQ_USER
+SONAR_BASE_URL
+TIME_CHRONO
+URL
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-61
+descripcion: Valores no secretos del ConfigMap
+cuando: 2026-10-26T23:26:59Z
+comando: kubectl -n backstage get configmap backstage-configmap -o jsonpath='URL={.data.URL}{"\n"}BACKEND={.data.BACKEND_URL}{"\n"}PG={.data.POSTGRES_HOST}:{.data.POSTGRES_PORT}/{.data.POSTGRES_DB}{"\n"}CRON={.data.TIME_CHRONO}{"\n"}SONAR={.data.SONAR_BASE_URL}{"\n"}'
+---salida---
+URL=https://backstageqas.colsubsidio.com
+BACKEND=https://backstageqas.colsubsidio.com
+PG=db-postgree-backstage-qas.postgres.database.azure.com:5432/postgres
+CRON=3
+SONAR=https://transacciones.colsubsidio.com/sonar
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-62
+descripcion: Nombres de secretos
+cuando: 2026-10-26T23:27:00Z
+comando: kubectl -n backstage get secret -o custom-columns=NAME:.metadata.name,TYPE:.type
+---salida---
+NAME                                    TYPE
+acr-secret                              kubernetes.io/dockerconfigjson
+azdev-sa-b0f181-secret                  kubernetes.io/service-account-token
+azdev-sa-d0b0ea-secret                  kubernetes.io/service-account-token
+backstage-secrets                       Opaque
+backstage-tls                           kubernetes.io/tls
+deploy-backstage-auth                   Opaque
+deploy-backstage-genkey                 Opaque
+deploy-backstage-protected-parameters   Opaque
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-63
+descripcion: Vault e identidad presente
+cuando: 2026-10-26T23:27:00Z
+comando: kubectl -n backstage get secretproviderclass backstage-azure-keyvault-secrets -o go-template='vault={{.spec.parameters.keyvaultName}}{{"\n"}}identity={{if .spec.parameters.userAssignedIdentityID}}presente{{else}}ausente{{end}}{{"\n"}}'
+---salida---
+vault=backstage-key-qas
+identity=presente
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-64
+descripcion: Claves traidas del vault
+cuando: 2026-10-26T23:27:01Z
+comando: kubectl -n backstage get secretproviderclass backstage-azure-keyvault-secrets -o go-template='{{range .spec.secretObjects}}{{.secretName}}{{"\n"}}{{range .data}}{{.key}}{{"\n"}}{{end}}{{end}}'
+---salida---
+backstage-secrets
+POSTGRES_PASSWORD
+AZURE_CLIENT_SECRET_COLS
+AZURE_DEVOPS_TOKEN_COLS
+RABBITMQ_PASSWORD
+SONAR_TOKEN
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-65
+descripcion: Driver CSI del vault
+cuando: 2026-10-26T23:27:02Z
+comando: kubectl get pods -n kube-system -l app=secrets-store-csi-driver
+---salida---
+NAME                                 READY   STATUS    RESTARTS      AGE
+aks-secrets-store-csi-driver-d5nfl   3/3     Running   2 (13d ago)   13d
+aks-secrets-store-csi-driver-f25hq   3/3     Running   0             13d
+aks-secrets-store-csi-driver-p5bkt   3/3     Running   2 (13d ago)   13d
+---fin--- exit=0 estado=ok
+
+### B.8 Flux
+
+==================================================
+id: K-70
+descripcion: Objetos de Flux
+cuando: 2026-10-26T23:27:03Z
+comando: kubectl get gitrepository,kustomization,helmrepository,helmrelease -A
+---salida---
+NAMESPACE   NAME                                                      URL                                                                                                       AGE    READY   STATUS
+backstage   gitrepository.source.toolkit.fluxcd.io/deploy-backstage   https://ColsubsidioDigital@dev.azure.com/ColsubsidioDigital/Platform%20Engineering/_git/idp-colsubsidio   231d   False   failed to checkout and determine revision: unable to list remote for 'https://ColsubsidioDigital@dev.azure.com/ColsubsidioDigital/Platform%20Engineering/_git/idp-colsubsidio': repository not found: TF401019: The Git repository with name or identifier idp-colsubsidio does not exist or you do not have permissions for the operation you are attempting.
+
+NAMESPACE   NAME                                                                          AGE    READY   STATUS
+backstage   kustomization.kustomize.toolkit.fluxcd.io/deploy-backstage-kustomization-qa   231d   True    Applied revision: release@sha1:6b8b2149a1d0e24853901366855c2474077abddf
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-71
+descripcion: Rama que lee Flux
+cuando: 2026-10-26T23:27:04Z
+comando: kubectl -n backstage get gitrepository deploy-backstage -o jsonpath='url={.spec.url}{"\n"}branch={.spec.ref.branch}{"\n"}tag={.spec.ref.tag}{"\n"}interval={.spec.interval}{"\n"}revision={.status.artifact.revision}{"\n"}'
+---salida---
+url=https://ColsubsidioDigital@dev.azure.com/ColsubsidioDigital/Platform%20Engineering/_git/idp-colsubsidio
+branch=release
+tag=
+interval=1m0s
+revision=release@sha1:6b8b2149a1d0e24853901366855c2474077abddf
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-72
+descripcion: Kustomization QA
+cuando: 2026-10-26T23:27:05Z
+comando: kubectl -n backstage get kustomization deploy-backstage-kustomization-qa -o jsonpath='path={.spec.path}{"\n"}source={.spec.sourceRef.kind}/{.spec.sourceRef.name}{"\n"}interval={.spec.interval}{"\n"}ready={.status.conditions[0].status}{"\n"}msg={.status.conditions[0].message}{"\n"}'
+---salida---
+path=/kubernetes/backstage/overlays/qa
+source=GitRepository/deploy-backstage
+interval=10m0s
+ready=True
+msg=Applied revision: release@sha1:6b8b2149a1d0e24853901366855c2474077abddf
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-73
+descripcion: Componentes de Flux
+cuando: 2026-10-26T23:27:06Z
+comando: kubectl -n flux-system get pods,deploy
+---salida---
+NAME                                           READY   STATUS                   RESTARTS      AGE
+pod/fluxconfig-agent-68dc9c5d58-hqzvv          2/2     Running                  0             34d
+pod/fluxconfig-controller-79888695b9-cqb4g     2/2     Running                  1 (34d ago)   34d
+pod/fluxconfig-controller-85bf5fb7b7-rbk2j     0/2     ContainerStatusUnknown   2             202d
+pod/helm-controller-8659ccdf54-6pgc9           1/1     Running                  0             34d
+pod/kustomize-controller-565d48c566-cmd2k      1/1     Running                  0             34d
+pod/notification-controller-677c69bc85-hl5dj   1/1     Running                  0             14d
+pod/notification-controller-677c69bc85-vpmd9   0/1     Completed                0             34d
+pod/source-controller-7b76b5c9bd-b7pqm         1/1     Running                  0             34d
+
+NAME                                      READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/fluxconfig-agent          1/1     1            1           231d
+deployment.apps/fluxconfig-controller     1/1     1            1           231d
+deployment.apps/helm-controller           1/1     1            1           231d
+deployment.apps/kustomize-controller      1/1     1            1           231d
+deployment.apps/notification-controller   1/1     1            1           231d
+deployment.apps/source-controller         1/1     1            1           231d
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-74
+descripcion: Resumen de Flux
+cuando: 2026-10-26T23:27:07Z
+comando: flux get all -A
+---salida---
+bash: line 1: flux: command not found
+---fin--- exit=127 estado=error
+
+### B.9 Seguridad y control
+
+==================================================
+id: K-80
+descripcion: Plantillas Gatekeeper
+cuando: 2026-10-26T23:27:07Z
+comando: kubectl get constrainttemplates
+---salida---
+No resources found
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-81
+descripcion: Politicas activas
+cuando: 2026-10-26T23:27:08Z
+comando: kubectl get constraints
+---salida---
+No resources found
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-82
+descripcion: Permisos en Backstage
+cuando: 2026-10-26T23:27:09Z
+comando: kubectl -n backstage get sa,role,rolebinding
+---salida---
+NAME                             SECRETS   AGE
+serviceaccount/azdev-sa-b0f181   0         248d
+serviceaccount/azdev-sa-d0b0ea   0         248d
+serviceaccount/default           0         438d
+serviceaccount/flux-applier      0         231d
+
+NAME                                               CREATED AT
+role.rbac.authorization.k8s.io/flux-applier-role   2026-03-09T03:11:15Z
+
+NAME                                                                                ROLE                        AGE
+rolebinding.rbac.authorization.k8s.io/azdev-rb-azdev-sa-b0f181-admin-on-backstage   ClusterRole/cluster-admin   248d
+rolebinding.rbac.authorization.k8s.io/azdev-rb-azdev-sa-d0b0ea-admin-on-backstage   ClusterRole/cluster-admin   248d
+rolebinding.rbac.authorization.k8s.io/flux-applier-binding                          Role/flux-applier-role      231d
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-83
+descripcion: Permisos a nivel cluster
+cuando: 2026-10-26T23:27:10Z
+comando: kubectl get clusterrolebinding -o custom-columns=NAME:.metadata.name,ROLE:.roleRef.name | grep -vi system:
+---salida---
+NAME                                                                             ROLE
+acn-multitenancy-editor-binding                                                  acn-multitenancy-editor
+aks-cluster-admin-binding                                                        cluster-admin
+aks-cluster-admin-binding-aad                                                    cluster-admin
+aks-secretproviderclasses-rolebinding                                            aks-secretproviderclasses-role
+aks-secretprovidersyncing-rolebinding                                            aks-secretprovidersyncing-role
+aks-secretprovidertokenrequest-rolebinding                                       aks-secretprovidertokenrequest-role
+aks-service-rolebinding                                                          aks-service
+aks:trustedaccessrolebinding:defender-cloudposture:microsoft-defender-operator   aks:trustedaccessrole:defender-cloudposture:microsoft-defender-operator
+aks:trustedaccessrolebinding:defender-containers:microsoft-defender-operator     aks:trustedaccessrole:defender-containers:microsoft-defender-operator
+appmonitoringconfig-user-global                                                  appmonitoringconfig-user
+azure-policy-webhook-cluster-rolebinding                                         azure-policy-webhook-cluster-role
+azure-wi-webhook-manager-rolebinding                                             azure-wi-webhook-manager-role
+calico-cni-plugin                                                                calico-cni-plugin
+calico-kube-controllers                                                          calico-kube-controllers
+calico-node                                                                      calico-node
+calico-typha                                                                     calico-typha
+cloud-node-manager                                                               cloud-node-manager
+cluster-admin                                                                    cluster-admin
+cluster-reconciler-flux-system                                                   cluster-admin
+container-health-read-logs-global                                                container-health-log-reader
+crd-controller-flux-system                                                       crd-controller-flux-system
+csi-azuredisk-node-binding                                                       csi-azuredisk-node-role
+csi-azurefile-node-secret-binding                                                csi-azurefile-node-secret-role
+eraser-imagejob-pods-cluster-rolebinding                                         eraser-imagejob-pods-cluster-role
+eraser-manager-rolebinding                                                       eraser-manager-role
+fluxconfig-agent-admin-binding                                                   cluster-admin
+fluxconfig-controller-admin-binding                                              cluster-admin
+gatekeeper-manager-rolebinding                                                   gatekeeper-manager-role
+ingress-nginx                                                                    ingress-nginx
+microsoft-defender-collector-role-binding                                        microsoft-defender-collector-role
+microsoft-defender-publisher-role-binding                                        microsoft-defender-publisher-role
+pod-reader-all-namespaces-binding                                                pod-reader-all-namespaces
+policy-agent                                                                     policy-agent
+secretproviderrotation-rolebinding                                               secretproviderrotation-role
+tigera-operator                                                                  tigera-operator
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-84
+descripcion: Red Calico
+cuando: 2026-10-26T23:27:11Z
+comando: kubectl -n calico-system get pods; kubectl -n tigera-operator get pods
+---salida---
+NAME                                       READY   STATUS    RESTARTS   AGE
+calico-kube-controllers-5644bb76b5-wbpct   1/1     Running   0          202d
+calico-node-4q9qn                          1/1     Running   0          74d
+calico-node-8hng4                          1/1     Running   0          74d
+calico-node-h4nct                          1/1     Running   0          74d
+calico-typha-689fb44f4c-jr7pn              1/1     Running   0          74d
+calico-typha-689fb44f4c-lwx4p              1/1     Running   0          74d
+NAME                              READY   STATUS    RESTARTS      AGE
+tigera-operator-7b4db4787-phdzp   1/1     Running   6 (12d ago)   74d
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-85
+descripcion: Namespace devops
+cuando: 2026-10-26T23:27:13Z
+comando: kubectl -n devops get all
+---salida---
+No resources found in devops namespace.
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-86
+descripcion: Namespace aks-command
+cuando: 2026-10-26T23:27:16Z
+comando: kubectl -n aks-command get all
+---salida---
+No resources found in aks-command namespace.
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-87
+descripcion: Controladores Gatekeeper
+cuando: 2026-10-26T23:27:19Z
+comando: kubectl -n gatekeeper-system get deploy,pods -o wide
+---salida---
+NAME                                    READY   UP-TO-DATE   AVAILABLE   AGE    CONTAINERS                        IMAGES                                                            SELECTOR
+deployment.apps/gatekeeper-audit        1/1     1            1           439d   gatekeeper-audit-container        mcr.microsoft.com/oss/v2/open-policy-agent/gatekeeper:v3.23.1-5   control-plane=audit-controller,gatekeeper.sh/operation=audit,gatekeeper.sh/system=yes
+deployment.apps/gatekeeper-controller   2/2     2            2           439d   gatekeeper-controller-container   mcr.microsoft.com/oss/v2/open-policy-agent/gatekeeper:v3.23.1-5   control-plane=controller-manager,gatekeeper.sh/operation=webhook,gatekeeper.sh/system=yes
+
+NAME                                         READY   STATUS    RESTARTS   AGE   IP             NODE                               NOMINATED NODE   READINESS GATES
+pod/gatekeeper-audit-7644d6d449-85gpx        1/1     Running   0          13d   10.244.2.162   aks-nodepool-41769044-vmss00000y   <none>           <none>
+pod/gatekeeper-controller-569fcf49d5-67hqb   1/1     Running   0          13d   10.244.2.188   aks-nodepool-41769044-vmss00000y   <none>           <none>
+pod/gatekeeper-controller-569fcf49d5-mpgmg   1/1     Running   0          13d   10.244.1.100   aks-nodepool-41769044-vmss000016   <none>           <none>
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-88
+descripcion: Metrics server
+cuando: 2026-10-26T23:27:20Z
+comando: kubectl -n kube-system get deploy,pods -l k8s-app=metrics-server -o wide
+---salida---
+NAME                             READY   UP-TO-DATE   AVAILABLE   AGE    CONTAINERS                          IMAGES                                                                                                                                 SELECTOR
+deployment.apps/metrics-server   2/2     2            2           439d   metrics-server-vpa,metrics-server   mcr.microsoft.com/oss/v2/kubernetes/autoscaler/addon-resizer:v1.8.23-31,mcr.microsoft.com/oss/v2/kubernetes/metrics-server:v0.7.2-31   k8s-app=metrics-server
+
+NAME                                 READY   STATUS    RESTARTS   AGE   IP             NODE                               NOMINATED NODE   READINESS GATES
+pod/metrics-server-ccf967474-6pd8g   2/2     Running   0          13d   10.244.2.73    aks-nodepool-41769044-vmss00000y   <none>           <none>
+pod/metrics-server-ccf967474-d24zh   2/2     Running   0          13d   10.244.1.188   aks-nodepool-41769044-vmss000016   <none>           <none>
+---fin--- exit=0 estado=ok
+
+### B.10 Proceso de Backstage
+
+==================================================
+id: K-90
+descripcion: Estado de probes sin ejecutar dentro del pod
+cuando: 2026-10-26T23:27:21Z
+comando: kubectl -n backstage get deploy backstage-deployment -o jsonpath='generation={.metadata.generation}{"\n"}observed={.status.observedGeneration}{"\n"}available={.status.availableReplicas}{"\n"}ready={.status.readyReplicas}{"\n"}conditions={range .status.conditions[*]}{.type}={.status}{";"}{end}{"\n"}'
+---salida---
+generation=37
+observed=37
+available=1
+ready=1
+conditions=Progressing=True;Available=True;
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-91
+descripcion: Conteos de fallas conocidas en logs (30 min)
+cuando: 2026-10-26T23:27:22Z
+comando: L=$(kubectl -n backstage logs deploy/backstage-deployment --since=30m); printf 'rabbitmq_404=%s\n' "$(printf '%s' "$L" | grep -ci 'fetchHostsFromAzureDevOps')"; printf 'placeholder=%s\n' "$(printf '%s' "$L" | grep -ci 'PlaceholderProcessor')"; printf 'no_matching_files=%s\n' "$(printf '%s' "$L" | grep -ci 'no matching files')"; printf 'rabbitmq_ok=%s\n' "$(printf '%s' "$L" | grep -ci 'sincronizadas con catálogo')"
+---salida---
+Found 2 pods, using pod/backstage-deployment-6674bd47c9-c29vc
+rabbitmq_404=20
+placeholder=1394
+no_matching_files=186
+rabbitmq_ok=0
+---fin--- exit=0 estado=ok
+
+==================================================
+id: K-92
+descripcion: Conteo de errores y avisos
+cuando: 2026-10-26T23:27:24Z
+comando: kubectl -n backstage logs deploy/backstage-deployment --since=30m | grep -ciE 'error|warn'
+---salida---
+Found 2 pods, using pod/backstage-deployment-6674bd47c9-c29vc
+1779
+---fin--- exit=0 estado=ok
+
+### C Recursos de Azure
+
+==================================================
+id: AZ-01
+descripcion: Recursos del grupo
+cuando: 2026-10-26T23:27:25Z
+comando: az resource list -g rg-backstage-qas --query '[].{nombre:name,tipo:type}' -o table
+---salida---
+Nombre                                                      Tipo
+----------------------------------------------------------  -----------------------------------------------------
+backstage-key-qas                                           Microsoft.KeyVault/vaults
+db-postgree-backstage-qas                                   Microsoft.DBforPostgreSQL/flexibleServers
+RecommendedAlertRules-AG-9                                  microsoft.insights/actiongroups
+CPU Usage Percentage - aks-backstage-qas                    microsoft.insights/metricalerts
+Memory Working Set Percentage - aks-backstage-qas           microsoft.insights/metricalerts
+vnet-backstage-qas                                          Microsoft.Network/virtualNetworks
+ui-aks-backstage-qas                                        Microsoft.ManagedIdentity/userAssignedIdentities
+aks-backstage-qas                                           Microsoft.ContainerService/managedClusters
+privatelink.azurecr.io                                      Microsoft.Network/privateDnsZones
+privatelink.azurecr.io/link-vnet-backstage-qas-acr          Microsoft.Network/privateDnsZones/virtualNetworkLinks
+nsg-backstage-qas-default                                   Microsoft.Network/networkSecurityGroups
+privatelink.vaultcore.azure.net                             Microsoft.Network/privateDnsZones
+privatelink.vaultcore.azure.net/link-vnet-backstage-qas-kv  Microsoft.Network/privateDnsZones/virtualNetworkLinks
+backstagecoreqas                                            Microsoft.ContainerRegistry/registries
+nsg-services                                                Microsoft.Network/networkSecurityGroups
+vm-agente_key                                               Microsoft.Compute/sshPublicKeys
+vm-agente-ip                                                Microsoft.Network/publicIPAddresses
+vm-agente720_z1                                             Microsoft.Network/networkInterfaces
+vm-agente                                                   Microsoft.Compute/virtualMachines
+vm-agente_OsDisk_1_463bad29deb04fbfa1904d4a2ea776cb         Microsoft.Compute/disks
+vm-agente/AzurePolicyforLinux                               Microsoft.Compute/virtualMachines/extensions
+vm-agente/MDE.Linux                                         Microsoft.Compute/virtualMachines/extensions
+pe-acr                                                      Microsoft.Network/privateEndpoints
+pe-acr-nic                                                  Microsoft.Network/networkInterfaces
+pe-postgresql                                               Microsoft.Network/privateEndpoints
+pe-postgresql-nic                                           Microsoft.Network/networkInterfaces
+privatelink.postgres.database.azure.com                     Microsoft.Network/privateDnsZones
+privatelink.postgres.database.azure.com/zk7nyu6l5ynbg       Microsoft.Network/privateDnsZones/virtualNetworkLinks
+pe-keyvault                                                 Microsoft.Network/privateEndpoints
+pe-keyvault-nic                                             Microsoft.Network/networkInterfaces
+vault-mn9a9ami                                              Microsoft.RecoveryServices/vaults
+vm-agente/enablevmAccess                                    Microsoft.Compute/virtualMachines/extensions
+---fin--- exit=0 estado=ok
+
+==================================================
+id: AZ-02
+descripcion: Subredes
+cuando: 2026-10-26T23:27:27Z
+comando: az network vnet subnet list -g rg-backstage-qas --vnet-name vnet-backstage-qas --query '[].{nombre:name,prefijo:addressPrefix}' -o table
+---salida---
+Nombre           Prefijo
+---------------  -------------
+default          10.7.114.0/24
+subnet-services  10.7.115.0/24
+---fin--- exit=0 estado=ok
+
+==================================================
+id: AZ-03
+descripcion: Private endpoints
+cuando: 2026-10-26T23:27:30Z
+comando: az network private-endpoint list -g rg-backstage-qas --query '[].{nombre:name,estado:privateLinkServiceConnections[0].privateLinkServiceConnectionState.status}' -o table
+---salida---
+Nombre         Estado
+-------------  --------
+pe-acr         Approved
+pe-keyvault    Approved
+pe-postgresql  Approved
+---fin--- exit=0 estado=ok
+
+==================================================
+id: AZ-04
+descripcion: Zonas DNS privadas
+cuando: 2026-10-26T23:27:31Z
+comando: az network private-dns zone list --query '[].{zona:name,grupo:resourceGroup}' -o table
+---salida---
+Zona                                     Grupo
+---------------------------------------  ----------------
+privatelink.azurecr.io                   rg-backstage-qas
+privatelink.postgres.database.azure.com  rg-backstage-qas
+privatelink.vaultcore.azure.net          rg-backstage-qas
+---fin--- exit=0 estado=ok
+
+==================================================
+id: AZ-05
+descripcion: Reglas nsg-services
+cuando: 2026-10-26T23:27:32Z
+comando: az network nsg rule list -g rg-backstage-qas --nsg-name nsg-services -o table
+---salida---
+Name                                                                           ResourceGroup     Priority    SourcePortRanges    SourceAddressPrefixes    SourceASG    Access    Protocol    Direction    DestinationPortRanges    DestinationAddressPrefixes    DestinationASG
+-----------------------------------------------------------------------------  ----------------  ----------  ------------------  -----------------------  -----------  --------  ----------  -----------  -----------------------  ----------------------------  ----------------
+MicrosoftDefenderForCloud-JITRule_-487257998_A93A7ACAF1704298BCE58D05AFA3BFA4  rg-backstage-qas  4096        *                   *                        None         Deny      *           Inbound      22                       10.7.115.4                    None
+ssh                                                                            rg-backstage-qas  1000        *                   181.69.154.165           None         Allow     *           Inbound      22                       10.7.115.4                    None
+---fin--- exit=0 estado=ok
+
+==================================================
+id: AZ-06
+descripcion: Reglas nsg de nodos
+cuando: 2026-10-26T23:27:33Z
+comando: az network nsg rule list -g rg-backstage-qas --nsg-name nsg-backstage-qas-default -o table
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: AZ-07
+descripcion: Peering de la VNet
+cuando: 2026-10-26T23:27:35Z
+comando: az network vnet peering list -g rg-backstage-qas --vnet-name vnet-backstage-qas -o table
+---salida---
+AllowForwardedTraffic    AllowGatewayTransit    AllowVirtualNetworkAccess    DoNotVerifyRemoteGateways    Name                        PeerCompleteVnets    PeeringState    PeeringSyncLevel    ProvisioningState    ResourceGroup     ResourceGuid                          UseRemoteGateways
+-----------------------  ---------------------  ---------------------------  ---------------------------  --------------------------  -------------------  --------------  ------------------  -------------------  ----------------  ------------------------------------  -------------------
+True                     False                  True                         False                        peer-vnet-backstage-onprem  True                 Connected       FullyInSync         Succeeded            rg-backstage-qas  <guid-redactado>  True
+---fin--- exit=0 estado=ok
+
+==================================================
+id: AZ-08
+descripcion: Repositorios del ACR
+cuando: 2026-10-26T23:27:36Z
+comando: az acr repository list -n backstagecoreqas -o table
+---salida---
+Result
+---------
+agente-az
+backstage
+---fin--- exit=0 estado=ok
+
+==================================================
+id: AZ-09
+descripcion: Ultimas imagenes de Backstage
+cuando: 2026-10-26T23:27:38Z
+comando: az acr repository show-tags -n backstagecoreqas --repository backstage --orderby time_desc --top 10 -o table
+---salida---
+Result
+--------
+75532
+75359
+75297
+75287
+75193
+75114
+74399
+74373
+74371
+74366
+---fin--- exit=0 estado=ok
+
+==================================================
+id: AZ-10
+descripcion: PostgreSQL
+cuando: 2026-10-26T23:27:39Z
+comando: az postgres flexible-server show -g rg-backstage-qas -n db-postgree-backstage-qas --query '{version:version,estado:state,sku:sku.name,red:network.publicNetworkAccess}' -o table
+---salida---
+Version    Estado    Sku           Red
+---------  --------  ------------  --------
+17         Ready     Standard_B2s  Disabled
+---fin--- exit=0 estado=ok
+
+==================================================
+id: AZ-11
+descripcion: Configuracion del vault
+cuando: 2026-10-26T23:27:40Z
+comando: az keyvault show -n backstage-key-qas --query '{red:properties.publicNetworkAccess,rbac:properties.enableRbacAuthorization,softDelete:properties.enableSoftDelete}' -o table
+---salida---
+Red       Rbac    SoftDelete
+--------  ------  ------------
+Disabled  True    True
+---fin--- exit=0 estado=ok
+
+==================================================
+id: AZ-12
+descripcion: Nombres de secretos del vault
+cuando: 2026-10-26T23:27:41Z
+comando: az keyvault secret list --vault-name backstage-key-qas --query '[].{nombre:name,activo:attributes.enabled,vence:attributes.expires}' -o table
+---salida---
+Nombre                    Activo
+------------------------  --------
+APIGEE-PASSWORD           True
+AZURE-CLIENT-SECRET-COLS  True
+AZURE-DEVOPS-TOKEN-COLS   True
+POSTGRES-PASSWORD         True
+RABBITMQ-PASSWORD         True
+SONAR-TOKEN               True
+---fin--- exit=0 estado=ok
+
+==================================================
+id: AZ-13
+descripcion: Identidades administradas
+cuando: 2026-10-26T23:27:42Z
+comando: az identity list -g rg-backstage-qas --query '[].name' -o table
+---salida---
+Result
+--------------------
+ui-aks-backstage-qas
+---fin--- exit=0 estado=ok
+
+==================================================
+id: AZ-14
+descripcion: Diagnostico del cluster
+cuando: 2026-10-26T23:27:43Z
+comando: az monitor diagnostic-settings list --resource "$(az aks show -g rg-backstage-qas -n aks-backstage-qas --query id -o tsv)" --query '[].name' -o table
+---salida---
+
+---fin--- exit=0 estado=ok
+
+### D. Kubernetes, Flux y Kustomize en los discos de la VM
+
+==================================================
+id: FS-01
+descripcion: Archivos kustomization en la VM
+cuando: 2026-10-26T23:27:46Z
+comando: buscar -type f \( -name kustomization.yaml -o -name kustomization.yml -o -name kustomize.yaml \)
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: FS-02
+descripcion: Contenido de kustomization sin secretos
+cuando: 2026-10-26T23:27:46Z
+comando: buscar -type f \( -name kustomization.yaml -o -name kustomization.yml -o -name kustomize.yaml \) | while IFS= read -r f; do echo "### $f"; sin_secretos < "$f"; done
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: FS-03
+descripcion: Manifiestos Kubernetes encontrados
+cuando: 2026-10-26T23:27:47Z
+comando: buscar -type f \( -name '*.yaml' -o -name '*.yml' \) | grep -Ei '/kubernetes/|/k8s/|/manifests/|/overlays/|/base/|/charts/'
+---salida---
+
+---fin--- exit=1 estado=error
+
+==================================================
+id: FS-04
+descripcion: Tipos de objeto declarados en manifiestos
+cuando: 2026-10-26T23:27:47Z
+comando: buscar -type f \( -name '*.yaml' -o -name '*.yml' \) | grep -Ei '/kubernetes/|/k8s/|/manifests/|/overlays/|/base/' | while IFS= read -r f; do grep -hE '^kind:' "$f"; done | sort | uniq -c | sort -rn
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: FS-05
+descripcion: Render de overlays sin aplicar
+cuando: 2026-10-26T23:27:47Z
+comando: command -v kubectl >/dev/null || { echo 'kubectl no instalado'; exit 1; }; buscar -type f -path '*/overlays/*' \( -name kustomization.yaml -o -name kustomization.yml \) | while IFS= read -r f; do d=$(dirname "$f"); echo "### $d"; kubectl kustomize "$d" 2>&1 | sin_secretos | grep -E '^(apiVersion|kind|  name|  namespace)|image:|host:|type:|port:'; done
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: FS-06
+descripcion: Imagenes del overlay QA renderizado (sin API)
+cuando: 2026-10-26T23:27:47Z
+comando: command -v kubectl >/dev/null || { echo 'kubectl no instalado'; exit 1; }; buscar -type f -path '*/overlays/qa/*' \( -name kustomization.yaml -o -name kustomization.yml \) | while IFS= read -r f; do d=$(dirname "$f"); echo "### $d"; kubectl kustomize "$d" 2>&1 | grep -E '^kind:|^  name:|image:' ; done
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: FS-07
+descripcion: Repositorios Git con Kubernetes
+cuando: 2026-10-26T23:27:47Z
+comando: repos_con kustomization.yaml
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: FS-08
+descripcion: Objetos Flux declarados en archivos
+cuando: 2026-10-26T23:27:47Z
+comando: buscar -type f \( -name '*.yaml' -o -name '*.yml' \) | while IFS= read -r f; do if grep -qE 'kind:[[:space:]]*(GitRepository|Kustomization|HelmRelease|HelmRepository|OCIRepository|ImagePolicy|ImageRepository)' "$f" 2>/dev/null; then echo "### $f"; grep -E '^(apiVersion:|kind:|  name:|  namespace:|  url:|    branch:|  path:|  interval:|  prune:)' "$f"; fi; done
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: FS-09
+descripcion: Pipelines de Azure DevOps en la VM
+cuando: 2026-10-26T23:27:48Z
+comando: buscar -type f \( -name 'azure-pipelines*.yml' -o -name 'azure-pipelines*.yaml' -o -name 'terraform-pipelines.yaml' \)
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: FS-10
+descripcion: Repos clave de la plataforma clonados en la VM
+cuando: 2026-10-26T23:27:48Z
+comando: buscar -type d -name .git | while IFS= read -r d; do r=$(dirname "$d"); case "$(basename "$r")" in idp-colsubsidio|idp-colsubsidio-catalog|002-infraestructura-iac|003-platform-templates|005-templates-pipelines) echo "### $r"; printf 'rama: %s\n' "$(git -C "$r" branch --show-current 2>/dev/null)"; git -C "$r" log -1 --format='commit: %h %ci %s' 2>/dev/null;; esac; done
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: FS-11
+descripcion: Ultimo cambio del overlay QA en git local
+cuando: 2026-10-26T23:27:48Z
+comando: buscar -type f -path '*/kubernetes/backstage/overlays/qa/kustomization.yaml' | while IFS= read -r f; do r=$(git -C "$(dirname "$f")" rev-parse --show-toplevel 2>/dev/null) || continue; echo "### $f"; git -C "$r" log -3 --format='%h %ci %s' -- "${f#$r/}"; done
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: FS-12
+descripcion: Locations del catalogo en app-config (sin secretos)
+cuando: 2026-10-26T23:27:48Z
+comando: buscar -type f -name 'app-config*.yaml' -path '*idp-colsubsidio*' | while IFS= read -r f; do echo "### $f"; grep -E 'target:|type: url' "$f" | sed -E 's#(https?://)[^/@]+@#\1<credencial>@#'; done
+---salida---
+
+---fin--- exit=0 estado=ok
+
+### E. Flux en el cluster: estado interno
+
+==================================================
+id: FX-01
+descripcion: Versiones de los controladores Flux
+cuando: 2026-10-26T23:27:48Z
+comando: kubectl -n flux-system get deploy -o custom-columns=NAME:.metadata.name,IMAGE:.spec.template.spec.containers[0].image,READY:.status.readyReplicas
+---salida---
+NAME                      IMAGE                                                              READY
+fluxconfig-agent          mcr.microsoft.com/azurek8sflux/fluxconfig-agent:1.25.1             1
+fluxconfig-controller     mcr.microsoft.com/azurek8sflux/fluxconfig-controller:1.25.1        1
+helm-controller           mcr.microsoft.com/oss/v2/fluxcd/helm-controller:v1.5.5-5           1
+kustomize-controller      mcr.microsoft.com/oss/v2/fluxcd/kustomize-controller:v1.8.5-5      1
+notification-controller   mcr.microsoft.com/oss/v2/fluxcd/notification-controller:v1.8.4-6   1
+source-controller         mcr.microsoft.com/oss/v2/fluxcd/source-controller:v1.8.5-6         1
+---fin--- exit=0 estado=ok
+
+==================================================
+id: FX-02
+descripcion: Fuentes Git y ultima revision
+cuando: 2026-10-26T23:27:49Z
+comando: kubectl get gitrepository -A -o custom-columns=NS:.metadata.namespace,NAME:.metadata.name,URL:.spec.url,BRANCH:.spec.ref.branch,REVISION:.status.artifact.revision,READY:.status.conditions[0].status
+---salida---
+NS          NAME               URL                                                                                                       BRANCH    REVISION                                                READY
+backstage   deploy-backstage   https://ColsubsidioDigital@dev.azure.com/ColsubsidioDigital/Platform%20Engineering/_git/idp-colsubsidio   release   release@sha1:6b8b2149a1d0e24853901366855c2474077abddf   True
+---fin--- exit=0 estado=ok
+
+==================================================
+id: FX-03
+descripcion: Kustomizations y ultima aplicacion
+cuando: 2026-10-26T23:27:49Z
+comando: kubectl get kustomization -A -o custom-columns=NS:.metadata.namespace,NAME:.metadata.name,PATH:.spec.path,SOURCE:.spec.sourceRef.name,APPLIED:.status.lastAppliedRevision,READY:.status.conditions[0].status
+---salida---
+NS          NAME                                PATH                                SOURCE             APPLIED                                                 READY
+backstage   deploy-backstage-kustomization-qa   /kubernetes/backstage/overlays/qa   deploy-backstage   release@sha1:6b8b2149a1d0e24853901366855c2474077abddf   True
+---fin--- exit=0 estado=ok
+
+==================================================
+id: FX-04
+descripcion: Mensajes de estado de Flux
+cuando: 2026-10-26T23:27:50Z
+comando: kubectl get gitrepository,kustomization -A -o jsonpath='{range .items[*]}{.kind}/{.metadata.name}{" "}{.status.conditions[0].reason}{": "}{.status.conditions[0].message}{"\n"}{end}'
+---salida---
+GitRepository/deploy-backstage ProgressingWithRetry: reconciliation in progress
+Kustomization/deploy-backstage-kustomization-qa ReconciliationSucceeded: Applied revision: release@sha1:6b8b2149a1d0e24853901366855c2474077abddf
+---fin--- exit=0 estado=ok
+
+==================================================
+id: FX-05
+descripcion: Objetos que aplica Flux en QA
+cuando: 2026-10-26T23:27:51Z
+comando: kubectl -n backstage get kustomization deploy-backstage-kustomization-qa -o jsonpath='{range .status.inventory.entries[*]}{.id}{"\n"}{end}'
+---salida---
+backstage_backstage-azure-keyvault-secrets_secrets-store.csi.x-k8s.io_SecretProviderClass
+backstage_backstage-configmap__ConfigMap
+backstage_backstage-service__Service
+backstage_backstage-deployment_apps_Deployment
+backstage_backstage-pvc__PersistentVolumeClaim
+backstage_backstage-ingress_networking.k8s.io_Ingress
+---fin--- exit=0 estado=ok
+
+==================================================
+id: FX-06
+descripcion: Eventos recientes de Flux
+cuando: 2026-10-26T23:27:51Z
+comando: kubectl -n flux-system get events --sort-by=.lastTimestamp | tail -n 30
+---salida---
+No resources found in flux-system namespace.
+---fin--- exit=0 estado=ok
+
+==================================================
+id: FX-07
+descripcion: Conteo de reconciliaciones y errores del kustomize-controller (30 min)
+cuando: 2026-10-26T23:27:55Z
+comando: L=$(kubectl -n flux-system logs deploy/kustomize-controller --since=30m); printf 'backstage=%s\n' "$(printf '%s' "$L" | grep -ci 'backstage')"; printf 'reconciliation=%s\n' "$(printf '%s' "$L" | grep -ci 'Reconciliation')"; printf 'errores=%s\n' "$(printf '%s' "$L" | grep -ciE 'error|failed')"
+---salida---
+backstage=6
+reconciliation=3
+errores=0
+---fin--- exit=0 estado=ok
+
+==================================================
+id: FX-08
+descripcion: Conteo de errores del source-controller (30 min)
+cuando: 2026-10-26T23:27:55Z
+comando: kubectl -n flux-system logs deploy/source-controller --since=30m | grep -ciE 'error|failed|denied'
+---salida---
+2
+---fin--- exit=0 estado=ok
+
+==================================================
+id: FX-09
+descripcion: Notificaciones y automatizacion de imagen Flux
+cuando: 2026-10-26T23:27:56Z
+comando: kubectl -n flux-system get alert,provider,receiver,imagepolicy,imagerepository,imageupdateautomation -o wide
+---salida---
+No resources found
+---fin--- exit=0 estado=ok
+
+==================================================
+id: FX-10
+descripcion: Preflight de Flux
+cuando: 2026-10-26T23:27:58Z
+comando: flux check --pre
+---salida---
+bash: line 1: flux: command not found
+---fin--- exit=127 estado=error
+
+### F. Infraestructura como codigo en los discos de la VM
+
+==================================================
+id: IAC-01
+descripcion: Archivos IaC encontrados
+cuando: 2026-10-26T23:27:58Z
+comando: buscar -type f \( -name '*.tf' -o -name '*.hcl' -o -name '*.tfvars' -o -name 'stack-contract.yaml' -o -name 'inventory-*.yaml' -o -name 'platform.yaml' -o -name 'tofu.sh' \)
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: IAC-02
+descripcion: Repositorios Git con Terraform
+cuando: 2026-10-26T23:27:58Z
+comando: repos_con '*.tf'
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: IAC-03
+descripcion: Repositorios Git con Terragrunt
+cuando: 2026-10-26T23:27:58Z
+comando: repos_con terragrunt.hcl
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: IAC-04
+descripcion: Providers, modulos, backends y recursos
+cuando: 2026-10-26T23:27:59Z
+comando: buscar -type f \( -name '*.tf' -o -name '*.hcl' \) | while IFS= read -r f; do if grep -qE '^[[:space:]]*(provider|module|backend|resource|data|terraform)[[:space:]]' "$f" 2>/dev/null; then echo "### $f"; grep -E '^[[:space:]]*(provider|module|backend|resource|data|terraform)[[:space:]]' "$f"; fi; done
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: IAC-05
+descripcion: Origen de los modulos
+cuando: 2026-10-26T23:27:59Z
+comando: buscar -type f -name '*.tf' | while IFS= read -r f; do grep -HE '^[[:space:]]*source[[:space:]]*=' "$f"; done | sed -E 's#(https?://)[^/@]+@#\1<credencial>@#'
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: IAC-06
+descripcion: Versiones de Terraform y providers
+cuando: 2026-10-26T23:27:59Z
+comando: buscar -type f -name '*.tf' | while IFS= read -r f; do grep -HE 'required_version|version[[:space:]]*=' "$f"; done
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: IAC-07
+descripcion: Tipos de recurso declarados
+cuando: 2026-10-26T23:27:59Z
+comando: buscar -type f -name '*.tf' | while IFS= read -r f; do grep -hoE '^[[:space:]]*resource[[:space:]]+"[a-z0-9_]+"' "$f"; done | awk '{print $2}' | sort | uniq -c | sort -rn
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: IAC-08
+descripcion: AKS, red, vault, ACR y Postgres en el codigo
+cuando: 2026-10-26T23:27:59Z
+comando: buscar -type f -name '*.tf' | while IFS= read -r f; do grep -HE 'azurerm_(kubernetes_cluster|virtual_network|subnet|private_endpoint|private_dns_zone|key_vault|container_registry|postgresql_flexible_server|bastion_host|network_security_group)' "$f"; done
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: IAC-09
+descripcion: Backends de estado sin secretos
+cuando: 2026-10-26T23:27:59Z
+comando: buscar -type f \( -name '*.tf' -o -name '*.hcl' \) | while IFS= read -r f; do if grep -qE 'backend[[:space:]]+"' "$f"; then echo "### $f"; grep -E 'backend[[:space:]]+"|key[[:space:]]*=|container_name|bucket|region' "$f" | sin_secretos; fi; done
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: IAC-10
+descripcion: Contratos y definiciones IaC sin secretos
+cuando: 2026-10-26T23:27:59Z
+comando: buscar -type f \( -name 'stack-contract.yaml' -o -name 'inventory-*.yaml' -o -name 'platform.yaml' \) | while IFS= read -r f; do echo "### $f"; sin_secretos < "$f"; done
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: IAC-11
+descripcion: Estado local y carpetas inicializadas (solo nombres)
+cuando: 2026-10-26T23:28:00Z
+comando: buscar \( -name '*.tfstate' -o -name '*.tfstate.backup' -o -name '.terraform.lock.hcl' -o -name 'tfplan*' \); buscar_dirs_terraform
+---salida---
+
+---fin--- exit=0 estado=ok
+
+==================================================
+id: IAC-12
+descripcion: Recursos en el estado inicializado (solo nombres)
+cuando: 2026-10-26T23:28:00Z
+comando: tf=$(command -v tofu || command -v terraform) || { echo 'terraform y tofu no instalados'; exit 1; }; buscar_dirs_terraform | while IFS= read -r d; do w=$(dirname "$d"); echo "### $w"; "$tf" -chdir="$w" state list 2>&1 | head -n 100; done
+---salida---
+terraform y tofu no instalados
+---fin--- exit=1 estado=error
+
+==================================================
+id: IAC-13
+descripcion: Herramientas IaC
+cuando: 2026-10-26T23:28:00Z
+comando: tofu version 2>&1; terraform version 2>&1; terragrunt --version 2>&1; checkov --version 2>&1; tflint --version 2>&1; python3 --version 2>&1
+---salida---
+bash: line 1: tofu: command not found
+bash: line 1: terraform: command not found
+bash: line 1: terragrunt: command not found
+bash: line 1: checkov: command not found
+bash: line 1: tflint: command not found
+Python 3.12.3
+---fin--- exit=0 estado=ok
+
+==================================================
+fin: 2026-10-26T23:28:00Z
+total=159 ok=148 fallos=11

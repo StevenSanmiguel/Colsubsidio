@@ -1,0 +1,116 @@
+id	estado	exit	descripcion
+VM-01	ok	0	Nombre, sistema y kernel
+VM-02	ok	0	Distribucion de Linux
+VM-03	ok	0	Tiempo encendida y carga
+VM-04	ok	0	CPU y memoria
+VM-05	ok	0	Discos y espacio
+VM-06	ok	0	Discos y particiones
+VM-07	ok	0	Zona horaria y sincronizacion
+VM-10	ok	0	IP por interfaz
+VM-11	ok	0	Rutas de salida
+VM-12	ok	0	DNS de la VM
+VM-13	ok	0	Resolucion del vault
+VM-14	ok	0	Resolucion del ACR
+VM-15	ok	0	Resolucion de Postgres
+VM-16	ok	0	Resolucion del API del cluster
+VM-17	error	2	Resolucion del portal
+VM-18	ok	0	IP publica de salida
+VM-19	ok	0	Puertos abiertos
+VM-20	ok	0	Firewall local
+VM-30	ok	0	Servicios corriendo
+VM-31	ok	0	Servicios al arranque
+VM-32	ok	0	Tareas programadas
+VM-33	ok	0	Cron del usuario y del sistema
+VM-34	ok	0	Procesos por memoria
+VM-35	error	1	Agente de Azure DevOps
+VM-36	error	2	Carpeta del agente
+VM-37	ok	0	Contenedores Docker
+VM-40	ok	0	Azure CLI
+VM-41	ok	0	kubectl
+VM-42	ok	0	kubelogin
+VM-43	error	127	Helm
+VM-44	error	127	Flux CLI
+VM-45	error	127	Terraform u OpenTofu
+VM-46	ok	0	Git y Docker
+VM-50	ok	0	Cuenta y suscripcion
+VM-51	error	1	Version, estado y red del cluster
+VM-52	error	1	Pools de nodos
+VM-53	error	1	Complementos del cluster
+VM-54	error	1	Identidad federada y RBAC
+VM-55	error	1	Versiones de actualizacion
+K-01	ok	0	Contexto actual
+K-02	error	1	Version cliente y servidor
+K-03	error	1	Plano de control
+K-04	error	1	Permisos de la cuenta
+K-05	ok	0	Tipos de objeto
+K-06	error	1	Extensiones (CRD)
+K-10	error	1	Nodos
+K-11	error	1	Pool, tamano y zona
+K-12	error	1	Uso por nodo
+K-13	error	1	Capacidad y taints
+K-20	error	1	Namespaces
+K-21	error	1	Cargas de trabajo
+K-22	error	1	Pods
+K-23	error	1	Pods no Running
+K-24	error	1	Jobs y CronJobs
+K-25	error	1	Servicios
+K-26	error	1	Ingress
+K-27	ok	0	Ultimos eventos
+K-28	ok	0	Pods por memoria
+K-29	ok	0	Imagenes en uso
+K-30	error	1	Objetos de Backstage
+K-31	error	1	Imagen y replicas
+K-32	error	1	ReplicaSets e imagenes
+K-33	error	1	Historial de despliegues
+K-34	error	1	Estado del pod
+K-35	error	1	ConfigMap y Secret usados
+K-36	error	1	Volumenes
+K-37	error	1	Recursos del contenedor
+K-38	error	1	Rutas de salud
+K-39	error	1	Cuenta de servicio y pull secret
+K-40	error	1	Ingress de Backstage
+K-41	error	1	Servicio de Backstage
+K-42	error	1	Endpoints
+K-43	error	1	Balanceador interno o publico
+K-44	error	1	Controlador ingress-nginx
+K-45	error	1	Secreto TLS (solo nombre)
+K-46	error	1	Emisor y vencimiento del certificado
+K-47	error	1	NetworkPolicies
+K-50	error	1	PVC
+K-51	error	1	PV
+K-52	error	1	StorageClass
+K-60	error	1	Claves del ConfigMap
+K-61	error	1	Valores no secretos del ConfigMap
+K-62	error	1	Nombres de secretos
+K-63	error	1	Vault e identidad presente
+K-64	error	1	Claves traidas del vault
+K-65	error	1	Driver CSI del vault
+K-70	error	1	Objetos de Flux
+K-71	error	1	Rama que lee Flux
+K-72	error	1	Kustomization QA
+K-73	error	1	Componentes de Flux
+K-74	error	127	Resumen de Flux
+K-80	error	1	Plantillas Gatekeeper
+K-81	error	1	Politicas activas
+K-82	error	1	Permisos en Backstage
+K-83	error	1	Permisos a nivel cluster
+K-84	error	1	Red Calico
+K-85	error	1	Namespace devops
+K-86	error	1	Namespace aks-command
+K-90	ok	0	Healthcheck
+K-91	ok	0	Errores conocidos en logs
+K-92	error	1	Conteo de errores y avisos
+AZ-01	error	1	Recursos del grupo
+AZ-02	error	1	Subredes
+AZ-03	error	1	Private endpoints
+AZ-04	error	1	Zonas DNS privadas
+AZ-05	error	1	Reglas nsg-services
+AZ-06	error	1	Reglas nsg de nodos
+AZ-07	error	1	Peering de la VNet
+AZ-08	error	1	Repositorios del ACR
+AZ-09	error	1	Ultimas imagenes de Backstage
+AZ-10	error	1	PostgreSQL
+AZ-11	error	1	Configuracion del vault
+AZ-12	error	1	Nombres de secretos del vault
+AZ-13	error	1	Identidades administradas
+AZ-14	error	1	Diagnostico del cluster
